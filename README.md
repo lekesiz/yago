@@ -412,7 +412,7 @@ If you find YAGO helpful, please consider giving it a star! ⭐
 
 ---
 
-**Built with ❤️ by the YAGO Team**
+**Built with ❤️ by the YAGO Team + Mikail Lekesiz**
 
 **Version**: 7.1.0
 **Status**: Production Ready
