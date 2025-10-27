@@ -7,7 +7,6 @@ import { devtools, persist } from 'zustand/middleware';
 import type {
   QuestionUI,
   ClarificationProgress,
-  ClarificationResponse,
   StartClarificationRequest,
   AnswerRequest,
 } from '../types/clarification';

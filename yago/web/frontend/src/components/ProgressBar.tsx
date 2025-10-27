@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import type { ClarificationProgress, QuestionCategory } from '../types/clarification';
+import type { ClarificationProgress } from '../types/clarification';
 
 interface ProgressBarProps {
   progress: ClarificationProgress;
