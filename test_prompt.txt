@@ -1,0 +1,33 @@
+Build a lightweight REST API for task management with the following features:
+
+Core Functionality:
+- User authentication with JWT
+- CRUD operations for tasks (create, read, update, delete)
+- Task categorization and priority levels
+- Due date tracking and reminders
+
+Technical Requirements:
+- Python FastAPI framework
+- PostgreSQL database
+- Redis for caching
+- Docker containerization
+- Pytest for testing
+- Comprehensive API documentation with Swagger
+
+Quality Standards:
+- 80% test coverage minimum
+- Security best practices (input validation, SQL injection prevention)
+- Rate limiting for API endpoints
+- Proper error handling and logging
+
+Deployment:
+- Docker Compose for local development
+- Production-ready Dockerfile
+- Environment variable configuration
+- Health check endpoints
+
+This is a medium-complexity project that should trigger:
+- ClarificationAgent (20-30 questions)
+- Dynamic agent creation (SecurityAgent, DevOpsAgent, DatabaseAgent, APIDesignAgent)
+- Hybrid execution strategy
+- Real-time supervision
