@@ -7,7 +7,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, ClassVar
 
 from crewai import Agent, Task
 from pydantic import BaseModel, Field
@@ -37,7 +37,7 @@ class ClarificationAgent(Agent):
     """
 
     # Question templates by category
-    BASIC_QUESTIONS = [
+    BASIC_QUESTIONS: ClassVar[List[Dict[str, Any]]] = [
         {
             "key": "language",
             "question": "What programming language do you prefer?",
@@ -64,7 +64,7 @@ class ClarificationAgent(Agent):
         },
     ]
 
-    ECOMMERCE_QUESTIONS = [
+    ECOMMERCE_QUESTIONS: ClassVar[List[Dict[str, Any]]] = [
         {
             "key": "payment",
             "question": "Payment gateway?",
@@ -85,7 +85,7 @@ class ClarificationAgent(Agent):
         },
     ]
 
-    DASHBOARD_QUESTIONS = [
+    DASHBOARD_QUESTIONS: ClassVar[List[Dict[str, Any]]] = [
         {
             "key": "charts",
             "question": "Chart library?",
@@ -100,7 +100,7 @@ class ClarificationAgent(Agent):
         },
     ]
 
-    API_QUESTIONS = [
+    API_QUESTIONS: ClassVar[List[Dict[str, Any]]] = [
         {
             "key": "api_style",
             "question": "API style?",
@@ -121,7 +121,7 @@ class ClarificationAgent(Agent):
         },
     ]
 
-    INFRASTRUCTURE_QUESTIONS = [
+    INFRASTRUCTURE_QUESTIONS: ClassVar[List[Dict[str, Any]]] = [
         {
             "key": "deployment",
             "question": "Deployment target?",
@@ -136,7 +136,7 @@ class ClarificationAgent(Agent):
         },
     ]
 
-    QUALITY_QUESTIONS = [
+    QUALITY_QUESTIONS: ClassVar[List[Dict[str, Any]]] = [
         {
             "key": "test_coverage",
             "question": "Test coverage target?",
