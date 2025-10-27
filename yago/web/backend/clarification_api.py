@@ -584,6 +584,14 @@ try:
 except Exception as e:
     print(f"⚠️  Cost Tracking API routes not loaded: {e}")
 
+# Include performance benchmarks router
+try:
+    from performance_benchmarks import router as benchmarks_router
+    app.include_router(benchmarks_router)
+    print("✅ Performance Benchmarks API routes loaded")
+except Exception as e:
+    print(f"⚠️  Performance Benchmarks API routes not loaded: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn
