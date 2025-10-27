@@ -568,6 +568,14 @@ try:
 except Exception as e:
     print(f"⚠️  Template API routes not loaded: {e}")
 
+# Include agent collaboration router
+try:
+    from agent_collaboration import router as collaboration_router
+    app.include_router(collaboration_router)
+    print("✅ Agent Collaboration API routes loaded")
+except Exception as e:
+    print(f"⚠️  Agent Collaboration API routes not loaded: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn
