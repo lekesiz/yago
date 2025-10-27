@@ -576,6 +576,14 @@ try:
 except Exception as e:
     print(f"⚠️  Agent Collaboration API routes not loaded: {e}")
 
+# Include cost tracking router
+try:
+    from cost_tracking import router as cost_router
+    app.include_router(cost_router)
+    print("✅ Cost Tracking API routes loaded")
+except Exception as e:
+    print(f"⚠️  Cost Tracking API routes not loaded: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn
