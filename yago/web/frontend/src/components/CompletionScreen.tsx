@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 interface CompletionScreenProps {
   brief: any;
@@ -26,12 +27,16 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
     link.download = `yago-brief-${brief.session_id}.json`;
     link.click();
     URL.revokeObjectURL(url);
+    toast.success('Brief downloaded successfully!');
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(JSON.stringify(brief, null, 2));
-    // Toast notification would go here
-    alert('Brief copied to clipboard!');
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(brief, null, 2));
+      toast.success('Brief copied to clipboard!');
+    } catch (error) {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   return (

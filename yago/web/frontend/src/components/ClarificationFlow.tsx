@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { useClarificationStore } from '../store/clarificationStore';
 import { StartScreen } from './StartScreen';
 import { CompletionScreen } from './CompletionScreen';
@@ -89,10 +90,10 @@ export const ClarificationFlow: React.FC = () => {
         user_id: localStorage.getItem('yago_user_id') || undefined,
       });
       setStage('clarifying');
+      toast.success('Clarification started! Let\'s build something amazing.');
     } catch (error) {
       console.error('Failed to start clarification:', error);
-      // TODO: Show toast notification
-      alert('Failed to start clarification. Please try again.');
+      toast.error('Failed to start clarification. Please try again.');
     }
   };
 
@@ -102,14 +103,14 @@ export const ClarificationFlow: React.FC = () => {
 
     try {
       await submitAnswer(answer, false);
+      toast.success('Answer saved!');
       // Check if this was the last question
       if (progress && progress.answered >= progress.total) {
         handleComplete();
       }
     } catch (error) {
       console.error('Failed to submit answer:', error);
-      // TODO: Show toast notification
-      alert('Failed to submit answer. Please try again.');
+      toast.error('Failed to submit answer. Please try again.');
     }
   };
 
@@ -119,14 +120,14 @@ export const ClarificationFlow: React.FC = () => {
 
     try {
       await submitAnswer(null, true);
+      toast('Question skipped', { icon: '⏭️' });
       // Check if this was the last question
       if (progress && progress.answered >= progress.total) {
         handleComplete();
       }
     } catch (error) {
       console.error('Failed to skip question:', error);
-      // TODO: Show toast notification
-      alert('Failed to skip question. Please try again.');
+      toast.error('Failed to skip question. Please try again.');
     }
   };
 
@@ -136,7 +137,7 @@ export const ClarificationFlow: React.FC = () => {
       await navigateNext();
     } catch (error) {
       console.error('Failed to navigate:', error);
-      // TODO: Show toast notification
+      toast.error('Failed to navigate. Please try again.');
     }
   };
 
@@ -145,7 +146,7 @@ export const ClarificationFlow: React.FC = () => {
       await navigatePrevious();
     } catch (error) {
       console.error('Failed to navigate:', error);
-      // TODO: Show toast notification
+      toast.error('Failed to navigate. Please try again.');
     }
   };
 
@@ -173,10 +174,10 @@ export const ClarificationFlow: React.FC = () => {
       setCompletionBrief(brief);
       setStage('completed');
       disconnectWebSocket();
+      toast.success('🎉 Clarification completed successfully!');
     } catch (error) {
       console.error('Failed to complete clarification:', error);
-      // TODO: Show toast notification
-      alert('Failed to complete clarification. Please try again.');
+      toast.error('Failed to complete clarification. Please try again.');
     }
   };
 
