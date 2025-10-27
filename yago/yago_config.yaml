@@ -1,0 +1,123 @@
+# YAGO Configuration - API-First Architecture
+# Version: 1.0
+
+# Master Orchestrator - Koordinatör
+orchestrator:
+  provider: "anthropic"
+  model: "claude-3-5-sonnet-latest"
+  role: "Master Coordinator"
+  description: "Tüm ajanları yönetir, görevleri dağıtır, kaliteyi kontrol eder"
+  temperature: 0.3
+
+# Expert Agents - Uzman Ajanlar
+agents:
+  planner:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    role: "Technical Architect & Project Manager"
+    description: "Proje analizi, mimari tasarım, görev planlaması"
+    temperature: 0.4
+
+  coder:
+    provider: "openai"
+    model: "gpt-4o"
+    role: "Senior Software Developer"
+    description: "Kod yazma, refactoring, implementasyon"
+    temperature: 0.3
+    max_iterations: 15  # Maksimum tool kullanım sayısı
+
+  tester:
+    provider: "google"
+    model: "gemini-2.0-flash-exp"
+    role: "QA Engineer"
+    description: "Test yazma, test çalıştırma, bug raporlama"
+    temperature: 0.3
+    max_iterations: 12  # Test için daha az iteration yeterli
+
+  reviewer:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    role: "Code Reviewer & Security Analyst"
+    description: "Kod inceleme, güvenlik tarama, best practices"
+    temperature: 0.2
+
+  documenter:
+    provider: "openai"
+    model: "gpt-4o"
+    role: "Technical Writer"
+    description: "README, API docs, diyagramlar"
+    temperature: 0.5
+
+# Quality Control - Kalite Kontrol
+validator:
+  provider: "anthropic"
+  model: "claude-3-5-sonnet-latest"
+  role: "Quality Validator"
+  description: "Çıktıları doğrular, tutarlılık kontrol eder"
+  temperature: 0.1
+
+# Workflow Settings
+workflow:
+  mode: "sequential"  # sequential | parallel | hierarchical
+  max_retries: 3
+  timeout_per_task: 300  # seconds
+  autonomous: true  # Otonom mod: Kullanıcıya soru sormadan çalış
+  verbose: false  # Sessiz mod: Sadece final raporu göster
+  professional_mode: true  # Profesyonel mod: Durmadan çalış
+
+# Offline AI Models
+offline_ai:
+  enabled: true  # Offline AI modellerini kullan
+  auto_download: true  # Model yoksa otomatik indir
+  prefer_coding: true  # Kod odaklı modelleri tercih et
+  priority: "fallback"  # fallback | primary | secondary
+  providers:
+    ollama:
+      enabled: true
+      base_url: "http://localhost:11434"
+    lm_studio:
+      enabled: false
+      base_url: "http://localhost:1234"
+
+# LLM Configuration
+llm_config:
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 60
+
+# Intelligent Rate Limiting
+rate_limiting:
+  enabled: true  # Rate limiting aktif
+  initial_wait: 2.0  # İlk bekleme süresi (saniye)
+  max_wait: 300.0  # Maksimum bekleme süresi (5 dakika)
+  exponential_base: 2.0  # Exponential backoff çarpanı
+  max_retries: -1  # Maksimum deneme sayısı (-1 = sonsuz, başarıya kadar dene)
+  jitter: true  # Rastgele jitter ekle (thundering herd önleme)
+  persistent_retry: true  # Başarıya ulaşana kadar durmadan dene
+  error_aggregation: true  # Hataları topla ve analiz et
+  self_improvement: true  # Hata pattern'lerinden öğren ve kendini geliştir
+
+# Sandbox Settings
+sandbox:
+  workspace_dir: "./workspace"
+  allow_shell: true
+  blocked_commands:
+    - "rm -rf /"
+    - "sudo"
+    - "chmod 777"
+    - "curl"
+    - "wget"
+  allowed_file_extensions:
+    - ".py"
+    - ".js"
+    - ".ts"
+    - ".json"
+    - ".yaml"
+    - ".md"
+    - ".txt"
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG | INFO | WARNING | ERROR
+  file: "logs/yago.log"
+  format: "[%(asctime)s] %(levelname)s - %(name)s - %(message)s"

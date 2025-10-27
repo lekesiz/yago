@@ -1,0 +1,49 @@
+# Balanced Preset - Default Configuration
+# Optimized balance between speed, cost, and quality
+
+name: "Balanced"
+description: "Optimal balance of speed, cost, and quality (default)"
+use_case: "General purpose development, most projects"
+
+agents:
+  planner:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.3  # Sweet spot for planning
+    max_iterations: 18
+
+  coder:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.3  # Sweet spot for coding
+    max_iterations: 15  # Good balance
+
+  tester:
+    provider: "google"
+    model: "gemini-2.0-flash-exp"
+    temperature: 0.3
+    max_iterations: 12  # Adequate testing
+
+  reviewer:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.3
+    max_iterations: 12
+
+  documenter:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.3
+    max_iterations: 10
+
+# Balanced settings
+settings:
+  verbose: true  # Standard output
+  retry_on_failure: true  # Retry when needed
+  parallel_tasks: false  # Sequential for reliability
+
+# Expected performance
+metrics:
+  estimated_speed: "Baseline (100%)"
+  cost_impact: "Baseline (100%)"
+  quality: "High quality with good speed and reasonable cost"

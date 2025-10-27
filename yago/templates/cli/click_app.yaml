@@ -1,0 +1,80 @@
+# Click CLI Application Template
+name: "Click CLI Application"
+category: "cli"
+description: "Command-line tool with Click framework, subcommands, and configuration"
+tags: ["python", "cli", "click", "command-line"]
+difficulty: "easy"
+estimated_time: "2-3 hours"
+
+tech_stack:
+  language: "Python 3.8+"
+  framework: "Click"
+  libraries:
+    - "click"
+    - "colorama"
+    - "rich"
+    - "pyyaml"
+
+project_idea: |
+  Create a professional CLI tool with Click that includes:
+
+  1. Command Structure:
+     - Main command group
+     - Multiple subcommands (init, config, run, status)
+     - Command aliases
+     - Help documentation
+
+  2. Arguments and Options:
+     - Positional arguments
+     - Optional flags (--verbose, --output, etc.)
+     - Environment variable support
+     - Configuration file support (YAML/JSON)
+
+  3. User Interface:
+     - Colored output with colorama/rich
+     - Progress bars for long operations
+     - Pretty-printed tables
+     - Interactive prompts
+
+  4. Features:
+     - Input validation
+     - Error handling with friendly messages
+     - Logging to file
+     - Dry-run mode (--dry-run)
+
+  5. Distribution:
+     - setup.py for pip installation
+     - Entry point configuration
+     - README with usage examples
+
+  File Structure:
+  cli-tool/
+  ├── src/
+  │   ├── __init__.py
+  │   ├── cli.py
+  │   ├── commands/
+  │   │   ├── init.py
+  │   │   ├── config.py
+  │   │   └── run.py
+  │   └── utils.py
+  ├── tests/
+  │   └── test_cli.py
+  ├── setup.py
+  ├── requirements.txt
+  └── README.md
+
+acceptance_criteria:
+  - "Main command with --help works"
+  - "At least 3 subcommands implemented"
+  - "Colored output working"
+  - "Configuration file support"
+  - "Input validation on all commands"
+  - "Error messages are user-friendly"
+  - "Can be installed with pip install -e ."
+  - "README with usage examples"
+
+config_overrides:
+  temperature: 0.3
+  max_iterations:
+    planner: 15
+    coder: 14

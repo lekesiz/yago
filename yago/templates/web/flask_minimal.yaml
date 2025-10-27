@@ -1,0 +1,70 @@
+# Flask Minimal Web App Template
+name: "Flask Minimal Web App"
+category: "web"
+description: "Lightweight Flask web application with SQLite database"
+tags: ["python", "flask", "web", "sqlite", "jinja2"]
+difficulty: "easy"
+estimated_time: "2-3 hours"
+
+tech_stack:
+  language: "Python 3.8+"
+  framework: "Flask"
+  database: "SQLite"
+  libraries:
+    - "flask"
+    - "flask-sqlalchemy"
+    - "flask-wtf"
+
+project_idea: |
+  Create a simple Flask web application with:
+
+  1. Basic Features:
+     - Homepage with welcome message
+     - Contact form with validation
+     - Simple blog post listing
+     - Static file serving (CSS, JS, images)
+
+  2. Database:
+     - SQLite database with SQLAlchemy
+     - Simple models (User, Post)
+     - Basic CRUD operations
+
+  3. Templates:
+     - Jinja2 templating
+     - Base template with inheritance
+     - Bootstrap for styling
+
+  4. Forms:
+     - WTForms for form handling
+     - CSRF protection
+     - Form validation
+
+  File Structure:
+  flask-app/
+  ├── app.py
+  ├── models.py
+  ├── forms.py
+  ├── templates/
+  │   ├── base.html
+  │   ├── index.html
+  │   └── contact.html
+  ├── static/
+  │   ├── css/
+  │   └── js/
+  ├── requirements.txt
+  └── README.md
+
+acceptance_criteria:
+  - "Flask app running on localhost:5000"
+  - "Homepage displays correctly"
+  - "Contact form submits and validates"
+  - "Database models defined and working"
+  - "Templates use inheritance"
+  - "Static files served correctly"
+  - "README with setup instructions"
+
+config_overrides:
+  temperature: 0.3
+  max_iterations:
+    planner: 15
+    coder: 15

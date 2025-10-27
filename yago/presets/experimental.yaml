@@ -1,0 +1,57 @@
+# Experimental Preset - Cutting Edge Models
+# For testing new models and features
+
+name: "Experimental"
+description: "Latest models and experimental features for exploration"
+use_case: "Research, testing new capabilities, exploring AI limits"
+
+agents:
+  planner:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.7  # Higher creativity
+    max_iterations: 20
+
+  coder:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.6  # Creative solutions
+    max_iterations: 18
+
+  tester:
+    provider: "google"
+    model: "gemini-2.0-flash-exp"  # Experimental model
+    temperature: 0.5
+    max_iterations: 15
+
+  reviewer:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.4
+    max_iterations: 15
+
+  documenter:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.6
+    max_iterations: 12
+
+# Experimental settings
+settings:
+  verbose: true  # Full output for analysis
+  retry_on_failure: true
+  experimental_features: true  # Enable beta features
+  allow_tool_chaining: true  # Advanced tool usage
+
+# Expected performance
+metrics:
+  estimated_speed: "Variable (depends on experimentation)"
+  cost_impact: "30% more expensive (latest models)"
+  quality: "Creative solutions, may be unconventional"
+
+# Notes
+notes:
+  - "May use newer model versions as they become available"
+  - "Results may vary significantly"
+  - "Useful for exploring cutting-edge AI capabilities"
+  - "Not recommended for production use"

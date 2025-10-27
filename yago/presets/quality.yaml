@@ -1,0 +1,49 @@
+# Quality Preset - Production-Ready Code
+# Optimized for high-quality, production-grade applications
+
+name: "Quality"
+description: "Maximum quality with lower temperature for consistent, reliable code"
+use_case: "Production applications, critical systems, client deliverables"
+
+agents:
+  planner:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.2  # Lower for precise, consistent planning
+    max_iterations: 25
+
+  coder:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.2  # Lower for reliable, bug-free code
+    max_iterations: 20  # More iterations for better quality
+
+  tester:
+    provider: "google"
+    model: "gemini-2.0-flash-exp"
+    temperature: 0.2
+    max_iterations: 18  # Thorough testing
+
+  reviewer:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.1  # Very low for strict code review
+    max_iterations: 15
+
+  documenter:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.3
+    max_iterations: 12
+
+# Quality-focused settings
+settings:
+  verbose: true  # Detailed output
+  retry_on_failure: true  # Retry failed operations
+  strict_validation: true  # Strict input/output validation
+
+# Expected performance
+metrics:
+  estimated_speed: "30% slower than balanced"
+  cost_impact: "40% more expensive"
+  quality_benefit: "Production-ready, minimal bugs, comprehensive tests"

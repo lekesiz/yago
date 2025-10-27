@@ -1,0 +1,86 @@
+# Pandas Data Analysis Template
+name: "Pandas Data Analysis"
+category: "data"
+description: "Data analysis pipeline with pandas, matplotlib, and statistics"
+tags: ["python", "pandas", "data-science", "visualization", "statistics"]
+difficulty: "medium"
+estimated_time: "3-4 hours"
+
+tech_stack:
+  language: "Python 3.8+"
+  framework: "Pandas"
+  libraries:
+    - "pandas"
+    - "numpy"
+    - "matplotlib"
+    - "seaborn"
+    - "openpyxl"
+
+project_idea: |
+  Create a data analysis pipeline with pandas that includes:
+
+  1. Data Loading:
+     - Read CSV, Excel, JSON files
+     - Handle missing values
+     - Data type conversion
+     - Initial data exploration
+
+  2. Data Cleaning:
+     - Remove duplicates
+     - Handle null values (fill, drop, interpolate)
+     - Outlier detection and handling
+     - Data validation
+
+  3. Data Analysis:
+     - Descriptive statistics (mean, median, std, quartiles)
+     - Group by operations
+     - Pivot tables
+     - Correlation analysis
+     - Time series analysis (if applicable)
+
+  4. Visualization:
+     - Distribution plots (histograms, box plots)
+     - Scatter plots and correlation heatmaps
+     - Time series plots
+     - Bar charts for categorical data
+     - Export plots as PNG/PDF
+
+  5. Reporting:
+     - Summary statistics report
+     - Data quality report
+     - Export cleaned data to CSV/Excel
+     - Jupyter notebook with analysis
+
+  File Structure:
+  data-analysis/
+  ├── src/
+  │   ├── data_loader.py
+  │   ├── data_cleaner.py
+  │   ├── analyzer.py
+  │   └── visualizer.py
+  ├── data/
+  │   ├── raw/
+  │   └── processed/
+  ├── outputs/
+  │   ├── plots/
+  │   └── reports/
+  ├── tests/
+  │   └── test_analysis.py
+  ├── requirements.txt
+  └── README.md
+
+acceptance_criteria:
+  - "Successfully loads multiple data formats"
+  - "Data cleaning pipeline handles missing values"
+  - "Generates descriptive statistics"
+  - "Creates at least 5 different visualizations"
+  - "Exports cleaned data to CSV/Excel"
+  - "Summary report generated"
+  - "Unit tests for core functions"
+  - "README with usage examples"
+
+config_overrides:
+  temperature: 0.3
+  max_iterations:
+    planner: 18
+    coder: 16

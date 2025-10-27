@@ -1,0 +1,86 @@
+# FastAPI REST API Template
+name: "FastAPI REST API"
+category: "web"
+description: "Modern REST API with FastAPI, Pydantic, and async support"
+tags: ["python", "fastapi", "rest", "api", "async"]
+difficulty: "medium"
+estimated_time: "4-6 hours"
+
+# Project structure and requirements
+tech_stack:
+  language: "Python 3.9+"
+  framework: "FastAPI"
+  database: "SQLite (upgradable to PostgreSQL)"
+  libraries:
+    - "fastapi"
+    - "uvicorn"
+    - "pydantic"
+    - "sqlalchemy"
+    - "python-jose[cryptography]"
+    - "passlib[bcrypt]"
+
+# Pre-configured project idea
+project_idea: |
+  Create a modern REST API with FastAPI that includes:
+
+  1. User Management:
+     - User registration with email validation
+     - JWT-based authentication
+     - User profile CRUD operations
+     - Password hashing with bcrypt
+
+  2. API Features:
+     - RESTful endpoints (GET, POST, PUT, DELETE)
+     - Request/response validation with Pydantic
+     - Automatic OpenAPI/Swagger documentation
+     - CORS middleware for frontend integration
+
+  3. Database:
+     - SQLAlchemy ORM with async support
+     - Database migrations
+     - Connection pooling
+
+  4. Security:
+     - JWT token authentication
+     - Password hashing
+     - Request rate limiting
+     - Input validation
+
+  5. Testing:
+     - Unit tests with pytest
+     - API endpoint tests
+     - 80%+ code coverage
+
+  File Structure:
+  fastapi-api/
+  ├── app/
+  │   ├── main.py
+  │   ├── models.py
+  │   ├── schemas.py
+  │   ├── crud.py
+  │   ├── auth.py
+  │   └── database.py
+  ├── tests/
+  │   ├── test_users.py
+  │   └── test_auth.py
+  ├── requirements.txt
+  └── README.md
+
+# Expected deliverables
+acceptance_criteria:
+  - "All CRUD endpoints working (Create, Read, Update, Delete)"
+  - "JWT authentication implemented and tested"
+  - "Pydantic models for request/response validation"
+  - "SQLAlchemy models with relationships"
+  - "Automatic API documentation at /docs"
+  - "Unit tests with >80% coverage"
+  - "README with setup and usage instructions"
+  - "Environment variables for configuration"
+
+# Configuration overrides
+config_overrides:
+  temperature: 0.3
+  max_iterations:
+    planner: 20
+    coder: 18
+    tester: 15

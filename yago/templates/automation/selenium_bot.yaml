@@ -1,0 +1,81 @@
+# Selenium Web Automation Template
+name: "Selenium Web Automation Bot"
+category: "automation"
+description: "Web scraping and automation with Selenium, BeautifulSoup, and Chrome driver"
+tags: ["python", "selenium", "automation", "web-scraping", "bot"]
+difficulty: "medium"
+estimated_time: "3-5 hours"
+
+tech_stack:
+  language: "Python 3.8+"
+  framework: "Selenium"
+  libraries:
+    - "selenium"
+    - "beautifulsoup4"
+    - "webdriver-manager"
+    - "pandas"
+
+project_idea: |
+  Create a web automation bot with Selenium that includes:
+
+  1. Browser Automation:
+     - Chrome/Firefox driver setup
+     - Headless mode support
+     - Page navigation and waiting
+     - Element finding (by ID, class, XPath, CSS selector)
+
+  2. Web Scraping:
+     - Extract text, links, images
+     - Handle dynamic content (AJAX)
+     - Parse HTML with BeautifulSoup
+     - Save data to CSV/JSON
+
+  3. Form Automation:
+     - Fill input fields
+     - Click buttons
+     - Select dropdowns
+     - Submit forms
+
+  4. Advanced Features:
+     - Screenshot capture
+     - Cookie management
+     - Handle pop-ups and alerts
+     - Multiple page scraping
+     - Error handling and retries
+
+  5. Data Export:
+     - Save to CSV/Excel
+     - Generate reports
+     - Log all activities
+
+  File Structure:
+  selenium-bot/
+  ├── src/
+  │   ├── __init__.py
+  │   ├── bot.py
+  │   ├── scraper.py
+  │   ├── parser.py
+  │   └── config.py
+  ├── data/
+  │   └── output/
+  ├── logs/
+  ├── tests/
+  │   └── test_bot.py
+  ├── requirements.txt
+  └── README.md
+
+acceptance_criteria:
+  - "Browser launches successfully (headless & normal mode)"
+  - "Successfully navigates to target pages"
+  - "Extracts data from at least 3 different elements"
+  - "Saves data to CSV/JSON"
+  - "Handles errors gracefully (retries, timeouts)"
+  - "Takes screenshots on errors"
+  - "Logs all activities"
+  - "README with setup and usage"
+
+config_overrides:
+  temperature: 0.3
+  max_iterations:
+    planner: 18
+    coder: 16

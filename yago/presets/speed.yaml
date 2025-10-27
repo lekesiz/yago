@@ -1,0 +1,49 @@
+# Speed Preset - Fast Execution
+# Optimized for quick prototypes and MVPs
+
+name: "Speed"
+description: "Fast execution with higher temperature for creative solutions"
+use_case: "Quick prototypes, MVPs, experimentation"
+
+agents:
+  planner:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.5  # Higher for faster, more creative planning
+    max_iterations: 12
+
+  coder:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.5  # Higher for faster code generation
+    max_iterations: 10  # Fewer iterations = faster
+
+  tester:
+    provider: "google"
+    model: "gemini-2.0-flash-exp"
+    temperature: 0.4
+    max_iterations: 8  # Minimal testing
+
+  reviewer:
+    provider: "anthropic"
+    model: "claude-3-5-sonnet-latest"
+    temperature: 0.4
+    max_iterations: 10
+
+  documenter:
+    provider: "openai"
+    model: "gpt-4o"
+    temperature: 0.5
+    max_iterations: 8
+
+# Speed-focused settings
+settings:
+  verbose: false  # Less output
+  retry_on_failure: false  # No retries
+  parallel_tasks: true  # Run tasks in parallel when possible
+
+# Expected performance
+metrics:
+  estimated_speed: "40% faster than balanced"
+  cost_impact: "20% cheaper"
+  quality_tradeoff: "May have minor bugs or missing edge cases"
