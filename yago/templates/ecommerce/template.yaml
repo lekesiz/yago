@@ -321,25 +321,25 @@ file_structure:
     - next.config.js
 
   backend:
-    - src/
-      - api/                    # API routes
-        - routes/
-        - models/
-        - schemas/
-      - database/               # Database setup
-      - payment/                # Stripe integration
-      - tasks/                  # Celery tasks
-      - utils/                  # Utilities
-    - tests/                    # Test suite
-    - alembic/                  # Migrations
-    - requirements.txt
-    - main.py
+    - "src/"
+    - "src/api/"
+    - "src/api/routes/"
+    - "src/api/models/"
+    - "src/api/schemas/"
+    - "src/database/"
+    - "src/payment/"
+    - "src/tasks/"
+    - "src/utils/"
+    - "tests/"
+    - "alembic/"
+    - "requirements.txt"
+    - "main.py"
 
   deployment:
-    - docker/
-    - kubernetes/
-    - .github/workflows/
-    - docker-compose.yml
+    - "docker/"
+    - "kubernetes/"
+    - ".github/workflows/"
+    - "docker-compose.yml"
 
 # Success criteria
 success_criteria:

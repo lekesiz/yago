@@ -6,7 +6,7 @@ Endpoints for project template management
 import yaml
 import os
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union, Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -26,8 +26,9 @@ class TemplateInfo(BaseModel):
     tags: List[str]
     estimated_duration: str
     estimated_cost: float
-    description: str
+    description: Optional[str] = None
     popular: bool = False
+    file: Optional[str] = None
 
 
 class TemplateDetail(BaseModel):
@@ -44,9 +45,9 @@ class TemplateDetail(BaseModel):
     estimated_tokens: int
     estimated_cost: float
     tech_stack: Dict
-    agents: List[Dict]
-    features: Dict
-    deployment: Optional[Dict] = None
+    agents: List  # Accept both string and dict formats
+    features: Optional[Union[Dict, List]] = None  # Accept both dict and list formats
+    deployment: Optional[Union[Dict, List]] = None  # Accept both dict and list formats
     success_criteria: Optional[List[str]] = None
     metadata: Dict
 
@@ -141,6 +142,57 @@ async def get_popular_templates():
     return popular
 
 
+@router.get("/search", response_model=List[TemplateInfo])
+async def search_templates(q: str):
+    """
+    Search templates by name, description, or tags
+
+    Query params:
+    - q: Search query string
+    """
+    index = load_template_index()
+    templates = index['templates']
+
+    q_lower = q.lower()
+
+    # Search in name, tags, and description
+    results = []
+    for template in templates:
+        # Load full template for description
+        try:
+            full_template = load_template_file(template['id'])
+            description = full_template.get('description', '').lower()
+        except:
+            description = ''
+
+        if (q_lower in template['name'].lower() or
+            any(q_lower in tag.lower() for tag in template['tags']) or
+            q_lower in description):
+            results.append(template)
+
+    return results
+
+
+# Health check for templates system
+@router.get("/health")
+async def templates_health():
+    """Health check for templates system"""
+    try:
+        index = load_template_index()
+        return {
+            "status": "healthy",
+            "total_templates": index['total_templates'],
+            "last_updated": index['last_updated'],
+            "templates_dir": str(TEMPLATES_DIR),
+            "templates_dir_exists": TEMPLATES_DIR.exists()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
+
 @router.get("/{template_id}", response_model=TemplateDetail)
 async def get_template(template_id: str):
     """Get detailed information about a specific template"""
@@ -193,54 +245,3 @@ async def apply_template(template_id: str, user_customizations: Optional[Dict] =
         "estimated_duration": template_data['estimated_duration'],
         "estimated_cost": template_data['estimated_cost']
     }
-
-
-@router.get("/search", response_model=List[TemplateInfo])
-async def search_templates(q: str):
-    """
-    Search templates by name, description, or tags
-
-    Query params:
-    - q: Search query string
-    """
-    index = load_template_index()
-    templates = index['templates']
-
-    q_lower = q.lower()
-
-    # Search in name, tags, and description
-    results = []
-    for template in templates:
-        # Load full template for description
-        try:
-            full_template = load_template_file(template['id'])
-            description = full_template.get('description', '').lower()
-        except:
-            description = ''
-
-        if (q_lower in template['name'].lower() or
-            any(q_lower in tag.lower() for tag in template['tags']) or
-            q_lower in description):
-            results.append(template)
-
-    return results
-
-
-# Health check for templates system
-@router.get("/health")
-async def templates_health():
-    """Health check for templates system"""
-    try:
-        index = load_template_index()
-        return {
-            "status": "healthy",
-            "total_templates": index['total_templates'],
-            "last_updated": index['last_updated'],
-            "templates_dir": str(TEMPLATES_DIR),
-            "templates_dir_exists": TEMPLATES_DIR.exists()
-        }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "error": str(e)
-        }
