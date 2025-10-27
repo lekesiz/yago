@@ -1,0 +1,74 @@
+# YAGO v7.1 Template: ML Platform
+name: "Machine Learning Platform"
+id: "ml_platform"
+version: "1.0.0"
+category: "ai_ml"
+description: "End-to-end ML platform with model training, serving, monitoring, and experiment tracking"
+icon: "🤖"
+
+tags: [ml, ai, tensorflow, pytorch, mlops]
+difficulty: "expert"
+estimated_duration: "32 minutes"
+estimated_tokens: 48000
+estimated_cost: 17.00
+
+tech_stack:
+  ml_frameworks: ["TensorFlow 2.x", "PyTorch", "Scikit-learn"]
+  language: "Python 3.11"
+  api: "FastAPI"
+  experiment_tracking: "MLflow"
+  model_registry: "MLflow Model Registry"
+  serving: "TensorFlow Serving + FastAPI"
+  feature_store: "Feast"
+  monitoring: "Evidently AI"
+  orchestration: "Apache Airflow"
+  storage: "S3/MinIO"
+  database: "PostgreSQL"
+
+agents:
+  - PlannerAgent
+  - CoderAgent
+  - DatabaseAgent
+  - PerformanceAgent
+  - DevOpsAgent
+  - MonitoringAgent
+  - TesterAgent
+
+features:
+  - Model training pipeline
+  - Hyperparameter tuning
+  - Model versioning
+  - A/B testing
+  - Model serving (REST API)
+  - Real-time inference
+  - Batch predictions
+  - Model monitoring
+  - Feature engineering
+  - Data versioning
+
+pipeline_stages:
+  - data_ingestion
+  - data_preprocessing
+  - feature_engineering
+  - model_training
+  - model_evaluation
+  - model_deployment
+  - monitoring
+
+deployment:
+  platform: "Kubernetes"
+  gpu_support: true
+  auto_scaling: true
+
+success_criteria:
+  - "Model training automated"
+  - "API inference < 100ms"
+  - "Model monitoring active"
+  - "A/B testing functional"
+  - "Experiment tracking working"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

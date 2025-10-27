@@ -1,0 +1,73 @@
+# YAGO v7.1 Template: Microservices Architecture
+name: "Microservices Architecture"
+id: "microservices"
+version: "1.0.0"
+category: "backend"
+description: "Scalable microservices architecture with service mesh, API gateway, and distributed tracing"
+icon: "🔧"
+
+tags: [microservices, kubernetes, docker, grpc, istio]
+difficulty: "expert"
+estimated_duration: "40 minutes"
+estimated_tokens: 60000
+estimated_cost: 22.00
+
+tech_stack:
+  languages: ["Python", "Go"]
+  container: "Docker"
+  orchestration: "Kubernetes"
+  service_mesh: "Istio"
+  api_gateway: "Kong"
+  communication: "gRPC + REST"
+  message_queue: "RabbitMQ"
+  database: "PostgreSQL per service"
+  monitoring: "Prometheus + Grafana"
+  tracing: "Jaeger"
+  logging: "ELK Stack"
+
+agents:
+  - PlannerAgent
+  - CoderAgent
+  - DevOpsAgent
+  - PerformanceAgent
+  - SecurityAgent
+  - APIDesignAgent
+  - MonitoringAgent
+  - TesterAgent
+
+features:
+  - Service discovery
+  - Load balancing
+  - Circuit breaker pattern
+  - API gateway
+  - Distributed tracing
+  - Centralized logging
+  - Health checks
+  - Auto-scaling
+  - Service-to-service auth
+
+services:
+  - auth_service
+  - user_service
+  - order_service
+  - payment_service
+  - notification_service
+  - api_gateway
+
+deployment:
+  platform: "Kubernetes (EKS/GKE/AKS)"
+  ci_cd: "GitLab CI/CD"
+  monitoring: "Prometheus + Grafana"
+
+success_criteria:
+  - "All services containerized"
+  - "Service mesh configured"
+  - "Distributed tracing working"
+  - "Auto-scaling functional"
+  - "99.9% uptime"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

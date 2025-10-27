@@ -1,0 +1,145 @@
+# YAGO v7.1 Template: SaaS Platform
+# Multi-tenant SaaS application with billing and analytics
+
+name: "SaaS Platform"
+id: "saas"
+version: "1.0.0"
+category: "web"
+description: "Multi-tenant SaaS platform with user management, billing system, analytics dashboard, and role-based access control"
+icon: "☁️"
+
+tags:
+  - saas
+  - multi-tenant
+  - billing
+  - subscription
+  - analytics
+  - rbac
+
+difficulty: "advanced"
+estimated_duration: "35 minutes"
+estimated_tokens: 55000
+estimated_cost: 19.50
+
+tech_stack:
+  frontend:
+    framework: "React 18"
+    language: "TypeScript"
+    styling: "Tailwind CSS + Shadcn/ui"
+    state: "React Query + Zustand"
+    routing: "React Router v6"
+
+  backend:
+    framework: "Node.js + Express"
+    language: "TypeScript"
+    auth: "Auth0"
+
+  database:
+    primary: "MongoDB Atlas"
+    orm: "Mongoose"
+
+  cache:
+    system: "Redis Cloud"
+
+  billing:
+    provider: "Stripe Billing"
+    features:
+      - subscriptions
+      - metered_billing
+      - invoicing
+
+  analytics:
+    provider: "Mixpanel"
+    features:
+      - user_tracking
+      - feature_usage
+      - conversion_funnels
+
+agents:
+  - name: "PlannerAgent"
+    priority: 1
+  - name: "SecurityAgent"
+    priority: 2
+  - name: "DatabaseAgent"
+    priority: 3
+  - name: "FrontendAgent"
+    priority: 4
+  - name: "CoderAgent"
+    priority: 5
+  - name: "PerformanceAgent"
+    priority: 6
+  - name: "APIDesignAgent"
+    priority: 7
+  - name: "TesterAgent"
+    priority: 8
+  - name: "DevOpsAgent"
+    priority: 9
+
+features:
+  multi_tenancy:
+    - tenant_isolation
+    - custom_domains
+    - white_labeling
+    - tenant_management
+
+  authentication:
+    - sso_support
+    - mfa
+    - social_login
+    - api_keys
+
+  billing:
+    - subscription_plans
+    - usage_based_billing
+    - proration
+    - invoice_generation
+
+  rbac:
+    - custom_roles
+    - permissions
+    - team_management
+    - audit_logs
+
+  analytics:
+    - usage_dashboard
+    - custom_reports
+    - data_export
+    - real_time_metrics
+
+database_schema:
+  collections:
+    - tenants
+    - users
+    - roles
+    - permissions
+    - subscriptions
+    - invoices
+    - usage_metrics
+    - audit_logs
+    - api_keys
+
+deployment:
+  containerization:
+    - Docker
+    - Kubernetes
+
+  cloud_providers:
+    preferred: "AWS"
+
+  services:
+    compute: "EKS"
+    database: "MongoDB Atlas"
+    cache: "ElastiCache"
+
+success_criteria:
+  - "Multi-tenant isolation working"
+  - "Billing integration complete"
+  - "RBAC fully functional"
+  - "Analytics dashboard live"
+  - "95%+ uptime SLA"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

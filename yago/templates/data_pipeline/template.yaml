@@ -1,0 +1,75 @@
+# YAGO v7.1 Template: Data Pipeline
+name: "Data Pipeline"
+id: "data_pipeline"
+version: "1.0.0"
+category: "data"
+description: "ETL pipeline with Apache Airflow, data validation, and monitoring"
+icon: "📊"
+
+tags: [data, etl, airflow, analytics, warehouse]
+difficulty: "advanced"
+estimated_duration: "30 minutes"
+estimated_tokens: 42000
+estimated_cost: 14.00
+
+tech_stack:
+  orchestration: "Apache Airflow 2.7"
+  language: "Python 3.11"
+  database: "PostgreSQL"
+  warehouse: "Snowflake / BigQuery"
+  validation: "Great Expectations"
+  visualization: "Grafana + Metabase"
+  scheduler: "Apache Airflow"
+  message_queue: "Apache Kafka"
+
+agents:
+  - PlannerAgent
+  - CoderAgent
+  - DatabaseAgent
+  - PerformanceAgent
+  - MonitoringAgent
+  - TesterAgent
+
+features:
+  - ETL workflows
+  - Data ingestion (batch & streaming)
+  - Data transformation
+  - Data validation & quality checks
+  - Error handling & retry logic
+  - Monitoring & alerts
+  - Data lineage tracking
+  - Scheduling & dependencies
+  - Incremental loading
+  - Data profiling
+
+pipeline_stages:
+  - extract (from various sources)
+  - transform (cleaning, normalization)
+  - validate (quality checks)
+  - load (to warehouse)
+  - monitor (performance & errors)
+
+data_sources:
+  - databases (MySQL, PostgreSQL)
+  - apis
+  - csv_files
+  - cloud_storage (S3)
+  - streaming (Kafka)
+
+deployment:
+  platform: "Kubernetes / Docker"
+  scheduler: "Airflow Scheduler"
+  workers: "Celery Workers"
+
+success_criteria:
+  - "ETL workflows automated"
+  - "Data quality > 99%"
+  - "Pipeline monitoring active"
+  - "Error handling robust"
+  - "< 1hr data freshness"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

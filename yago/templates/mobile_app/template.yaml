@@ -1,0 +1,65 @@
+# YAGO v7.1 Template: Mobile App
+name: "Mobile App"
+id: "mobile_app"
+version: "1.0.0"
+category: "mobile"
+description: "Cross-platform mobile app with React Native, offline support, and push notifications"
+icon: "📱"
+
+tags: [mobile, react-native, ios, android, firebase]
+difficulty: "intermediate"
+estimated_duration: "28 minutes"
+estimated_tokens: 40000
+estimated_cost: 13.50
+
+tech_stack:
+  framework: "React Native 0.73"
+  language: "TypeScript"
+  state: "Redux Toolkit"
+  navigation: "React Navigation 6"
+  backend: "Node.js + Express"
+  database: "Firebase Firestore"
+  storage: "Firebase Storage"
+  auth: "Firebase Auth"
+  push: "Firebase Cloud Messaging"
+  analytics: "Firebase Analytics"
+
+agents:
+  - PlannerAgent
+  - FrontendAgent
+  - CoderAgent
+  - PerformanceAgent
+  - TesterAgent
+  - DevOpsAgent
+
+features:
+  - Cross-platform (iOS + Android)
+  - Push notifications
+  - Offline-first architecture
+  - Biometric authentication
+  - Camera & photo library
+  - In-app purchases
+  - Deep linking
+  - Analytics tracking
+  - Crash reporting
+
+deployment:
+  ios:
+    - App Store submission
+    - TestFlight beta
+  android:
+    - Google Play Store
+    - Internal testing tracks
+
+success_criteria:
+  - "iOS and Android builds successful"
+  - "Offline mode working"
+  - "Push notifications delivered"
+  - "< 3s app startup time"
+  - "App Store ready"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

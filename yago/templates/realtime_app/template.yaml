@@ -1,0 +1,66 @@
+# YAGO v7.1 Template: Real-Time Application
+name: "Real-Time Application"
+id: "realtime_app"
+version: "1.0.0"
+category: "web"
+description: "Real-time collaborative application with WebSocket, live updates, and pub/sub messaging"
+icon: "⚡"
+
+tags: [realtime, websocket, chat, collaboration, socket-io]
+difficulty: "intermediate"
+estimated_duration: "26 minutes"
+estimated_tokens: 38000
+estimated_cost: 12.50
+
+tech_stack:
+  frontend: "React 18 + TypeScript"
+  backend: "Node.js + Socket.io"
+  database: "PostgreSQL"
+  cache: "Redis"
+  message_broker: "Redis Pub/Sub"
+  state_sync: "Y.js (CRDT)"
+
+agents:
+  - PlannerAgent
+  - FrontendAgent
+  - CoderAgent
+  - PerformanceAgent
+  - DevOpsAgent
+  - DatabaseAgent
+
+features:
+  - WebSocket connections
+  - Real-time messaging
+  - Presence detection
+  - Typing indicators
+  - Read receipts
+  - Live cursors
+  - Collaborative editing
+  - Room/channel management
+  - Message persistence
+  - Push notifications
+
+use_cases:
+  - Chat applications
+  - Collaborative editors
+  - Live dashboards
+  - Multiplayer games
+  - Live streaming chat
+
+deployment:
+  platform: "AWS/GCP"
+  scaling: "Horizontal with sticky sessions"
+  cdn: "CloudFront"
+
+success_criteria:
+  - "WebSocket connections stable"
+  - "< 50ms message latency"
+  - "Supports 10K+ concurrent users"
+  - "Zero message loss"
+  - "Reconnection handling"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

@@ -1,0 +1,378 @@
+# YAGO v7.1 Template: E-Commerce Platform
+# Full-stack e-commerce solution with payment integration
+
+name: "E-Commerce Platform"
+id: "ecommerce"
+version: "1.0.0"
+category: "web"
+description: "Full-featured e-commerce platform with product catalog, shopping cart, checkout, and payment processing"
+icon: "🛒"
+
+tags:
+  - ecommerce
+  - stripe
+  - fullstack
+  - payments
+  - nextjs
+  - fastapi
+
+difficulty: "intermediate"  # beginner, intermediate, advanced, expert
+estimated_duration: "25 minutes"
+estimated_tokens: 45000
+estimated_cost: 15.50  # USD
+
+# Technology Stack
+tech_stack:
+  frontend:
+    framework: "Next.js 14"
+    language: "TypeScript"
+    styling: "Tailwind CSS"
+    state: "Zustand"
+
+  backend:
+    framework: "FastAPI"
+    language: "Python 3.11+"
+    async: true
+
+  database:
+    primary: "PostgreSQL 15"
+    orm: "SQLAlchemy"
+    migrations: "Alembic"
+
+  cache:
+    system: "Redis 7"
+    use_cases:
+      - session_storage
+      - cart_data
+      - product_cache
+
+  queue:
+    system: "Celery"
+    broker: "Redis"
+    use_cases:
+      - email_notifications
+      - order_processing
+      - inventory_updates
+
+  payment:
+    provider: "Stripe"
+    features:
+      - credit_card
+      - apple_pay
+      - google_pay
+      - webhooks
+
+  storage:
+    provider: "AWS S3"
+    use_cases:
+      - product_images
+      - user_avatars
+      - invoices
+
+# Agents that will work on this project
+agents:
+  - name: "PlannerAgent"
+    priority: 1
+    tasks:
+      - architecture_design
+      - database_schema
+      - api_design
+
+  - name: "SecurityAgent"
+    priority: 2
+    tasks:
+      - authentication_setup
+      - payment_security
+      - data_encryption
+      - sql_injection_prevention
+
+  - name: "DatabaseAgent"
+    priority: 3
+    tasks:
+      - schema_creation
+      - migrations
+      - indexing
+      - query_optimization
+
+  - name: "FrontendAgent"
+    priority: 4
+    tasks:
+      - ui_components
+      - responsive_design
+      - state_management
+      - product_pages
+      - checkout_flow
+
+  - name: "CoderAgent"
+    priority: 5
+    tasks:
+      - backend_apis
+      - payment_integration
+      - order_processing
+      - inventory_management
+
+  - name: "TesterAgent"
+    priority: 6
+    tasks:
+      - unit_tests
+      - integration_tests
+      - payment_testing
+      - load_testing
+
+  - name: "DevOpsAgent"
+    priority: 7
+    tasks:
+      - docker_setup
+      - ci_cd_pipeline
+      - deployment
+      - monitoring
+
+# Pre-configured features
+features:
+  authentication:
+    - user_registration
+    - email_verification
+    - password_reset
+    - social_login (Google, Facebook)
+    - jwt_tokens
+
+  product_management:
+    - product_catalog
+    - categories
+    - search_filtering
+    - product_variants (size, color)
+    - inventory_tracking
+    - product_reviews
+
+  shopping_cart:
+    - add_to_cart
+    - update_quantity
+    - remove_items
+    - cart_persistence
+    - cart_sharing
+
+  checkout:
+    - guest_checkout
+    - address_management
+    - shipping_options
+    - tax_calculation
+    - promo_codes
+    - order_summary
+
+  payments:
+    - stripe_integration
+    - payment_methods
+    - payment_processing
+    - refunds
+    - webhooks
+
+  order_management:
+    - order_tracking
+    - order_history
+    - order_status_updates
+    - email_notifications
+
+  admin_panel:
+    - product_crud
+    - order_management
+    - customer_management
+    - analytics_dashboard
+    - inventory_management
+
+# Database Schema (simplified)
+database_schema:
+  tables:
+    - users
+    - products
+    - categories
+    - cart_items
+    - orders
+    - order_items
+    - payments
+    - addresses
+    - reviews
+    - promo_codes
+
+# API Endpoints (simplified)
+api_endpoints:
+  auth:
+    - POST /api/auth/register
+    - POST /api/auth/login
+    - POST /api/auth/logout
+    - POST /api/auth/refresh
+
+  products:
+    - GET /api/products
+    - GET /api/products/{id}
+    - POST /api/products (admin)
+    - PUT /api/products/{id} (admin)
+    - DELETE /api/products/{id} (admin)
+
+  cart:
+    - GET /api/cart
+    - POST /api/cart/items
+    - PUT /api/cart/items/{id}
+    - DELETE /api/cart/items/{id}
+
+  orders:
+    - GET /api/orders
+    - GET /api/orders/{id}
+    - POST /api/orders
+    - PUT /api/orders/{id}/status (admin)
+
+  payments:
+    - POST /api/payments/create-intent
+    - POST /api/payments/webhook
+    - POST /api/payments/refund (admin)
+
+# Customized clarification questions
+questions:
+  - category: "basic"
+    question: "What types of products will you sell?"
+    hint: "Physical goods, digital products, or services?"
+
+  - category: "basic"
+    question: "Do you need multi-vendor support?"
+    hint: "Allow multiple sellers or single store?"
+
+  - category: "technical"
+    question: "What payment methods do you need?"
+    options:
+      - "Credit/Debit Cards"
+      - "Apple Pay"
+      - "Google Pay"
+      - "PayPal"
+      - "Bank Transfer"
+
+  - category: "technical"
+    question: "Do you need international shipping?"
+    hint: "Multiple currencies and shipping zones?"
+
+  - category: "infrastructure"
+    question: "Expected traffic volume?"
+    options:
+      - "< 1,000 users/month"
+      - "1,000 - 10,000 users/month"
+      - "10,000 - 100,000 users/month"
+      - "> 100,000 users/month"
+
+  - category: "security"
+    question: "Do you need PCI DSS compliance?"
+    hint: "Required for storing payment data"
+
+  - category: "quality"
+    question: "Do you need real-time inventory updates?"
+    hint: "Live stock synchronization across channels"
+
+# Deployment configuration
+deployment:
+  containerization:
+    - Dockerfile (frontend)
+    - Dockerfile (backend)
+    - docker-compose.yml
+
+  cloud_providers:
+    preferred: "AWS"
+    alternatives:
+      - "Google Cloud"
+      - "Azure"
+      - "DigitalOcean"
+
+  services:
+    compute: "ECS/EKS"
+    database: "RDS PostgreSQL"
+    cache: "ElastiCache Redis"
+    storage: "S3"
+    cdn: "CloudFront"
+
+  ci_cd:
+    platform: "GitHub Actions"
+    stages:
+      - lint
+      - test
+      - build
+      - deploy_staging
+      - deploy_production
+
+# Best practices included
+best_practices:
+  - "PCI DSS compliance for payment processing"
+  - "HTTPS everywhere with TLS 1.3"
+  - "Rate limiting on API endpoints"
+  - "Input validation and sanitization"
+  - "Database connection pooling"
+  - "Redis caching for product catalog"
+  - "Asynchronous order processing with Celery"
+  - "Comprehensive error handling"
+  - "Structured logging with ELK stack"
+  - "Automated backup strategy"
+  - "Load testing with Locust"
+  - "Performance monitoring with New Relic"
+
+# Estimated project structure
+file_structure:
+  frontend:
+    - app/                      # Next.js App Router
+    - components/               # React components
+    - lib/                      # Utilities
+    - public/                   # Static assets
+    - styles/                   # Tailwind CSS
+    - package.json
+    - next.config.js
+
+  backend:
+    - src/
+      - api/                    # API routes
+        - routes/
+        - models/
+        - schemas/
+      - database/               # Database setup
+      - payment/                # Stripe integration
+      - tasks/                  # Celery tasks
+      - utils/                  # Utilities
+    - tests/                    # Test suite
+    - alembic/                  # Migrations
+    - requirements.txt
+    - main.py
+
+  deployment:
+    - docker/
+    - kubernetes/
+    - .github/workflows/
+    - docker-compose.yml
+
+# Success criteria
+success_criteria:
+  - "All API endpoints functional"
+  - "Stripe payment integration working"
+  - "Product catalog with search/filter"
+  - "Shopping cart persistence"
+  - "Order processing pipeline"
+  - "Admin panel operational"
+  - "90%+ test coverage"
+  - "< 2s page load times"
+  - "Security audit passed"
+  - "Deployment automated"
+
+# Notes for developers
+notes: |
+  This template provides a complete e-commerce solution with modern tech stack.
+  All best practices are implemented including security, performance, and scalability.
+
+  Key highlights:
+  - Stripe for secure payment processing
+  - Redis for high-performance caching
+  - Celery for async task processing
+  - PostgreSQL with optimized queries
+  - Next.js for SEO-friendly frontend
+  - Comprehensive test suite
+
+  Perfect for: Online stores, marketplaces, digital product sales
+
+# Created and maintained by
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  updated_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

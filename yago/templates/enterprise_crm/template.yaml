@@ -1,0 +1,82 @@
+# YAGO v7.1 Template: Enterprise CRM
+name: "Enterprise CRM System"
+id: "enterprise_crm"
+version: "1.0.0"
+category: "enterprise"
+description: "Full-featured CRM with sales pipeline, customer management, and analytics"
+icon: "🏢"
+
+tags: [crm, enterprise, sales, customers, analytics]
+difficulty: "advanced"
+estimated_duration: "45 minutes"
+estimated_tokens: 65000
+estimated_cost: 24.00
+
+tech_stack:
+  frontend: "Vue 3 + TypeScript"
+  backend: "FastAPI + Python"
+  database: "PostgreSQL"
+  search: "Elasticsearch"
+  cache: "Redis"
+  queue: "Celery + RabbitMQ"
+  reporting: "Apache Superset"
+
+agents:
+  - PlannerAgent
+  - SecurityAgent
+  - DatabaseAgent
+  - CoderAgent
+  - FrontendAgent
+  - DevOpsAgent
+  - IntegrationAgent
+  - TesterAgent
+
+features:
+  - Contact management
+  - Lead tracking
+  - Sales pipeline
+  - Deal management
+  - Activity tracking
+  - Email integration
+  - Calendar sync
+  - Task management
+  - Reporting & analytics
+  - Custom fields
+  - Workflow automation
+  - Audit logs
+  - GDPR compliance
+  - Multi-currency
+  - Role-based permissions
+
+modules:
+  - contacts
+  - leads
+  - opportunities
+  - accounts
+  - campaigns
+  - reports
+  - dashboards
+
+integrations:
+  - Email (Gmail, Outlook)
+  - Calendar (Google, Outlook)
+  - VoIP systems
+  - Marketing automation
+  - Accounting software
+
+deployment:
+  platform: "Kubernetes"
+  compliance: ["SOC 2", "GDPR", "HIPAA-ready"]
+
+success_criteria:
+  - "All CRM modules functional"
+  - "Search < 100ms"
+  - "Email sync working"
+  - "Custom reports generated"
+  - "Audit logging complete"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

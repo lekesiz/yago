@@ -1,0 +1,191 @@
+# YAGO v7.1 Templates Index
+# Central registry of all available project templates
+
+version: "1.0.0"
+last_updated: "2025-10-27"
+total_templates: 11
+
+templates:
+  - id: "ecommerce"
+    name: "E-Commerce Platform"
+    category: "web"
+    difficulty: "intermediate"
+    icon: "🛒"
+    tags: [ecommerce, stripe, fullstack, payments]
+    estimated_duration: "25 minutes"
+    estimated_cost: 15.50
+    file: "ecommerce/template.yaml"
+    popular: true
+
+  - id: "saas"
+    name: "SaaS Platform"
+    category: "web"
+    difficulty: "advanced"
+    icon: "☁️"
+    tags: [saas, multi-tenant, billing, subscription]
+    estimated_duration: "35 minutes"
+    estimated_cost: 19.50
+    file: "saas/template.yaml"
+    popular: true
+
+  - id: "mobile_app"
+    name: "Mobile App"
+    category: "mobile"
+    difficulty: "intermediate"
+    icon: "📱"
+    tags: [mobile, react-native, ios, android]
+    estimated_duration: "28 minutes"
+    estimated_cost: 13.50
+    file: "mobile_app/template.yaml"
+    popular: true
+
+  - id: "microservices"
+    name: "Microservices Architecture"
+    category: "backend"
+    difficulty: "expert"
+    icon: "🔧"
+    tags: [microservices, kubernetes, docker, grpc]
+    estimated_duration: "40 minutes"
+    estimated_cost: 22.00
+    file: "microservices/template.yaml"
+    popular: false
+
+  - id: "ml_platform"
+    name: "Machine Learning Platform"
+    category: "ai_ml"
+    difficulty: "expert"
+    icon: "🤖"
+    tags: [ml, ai, tensorflow, pytorch, mlops]
+    estimated_duration: "32 minutes"
+    estimated_cost: 17.00
+    file: "ml_platform/template.yaml"
+    popular: true
+
+  - id: "realtime_app"
+    name: "Real-Time Application"
+    category: "web"
+    difficulty: "intermediate"
+    icon: "⚡"
+    tags: [realtime, websocket, chat, collaboration]
+    estimated_duration: "26 minutes"
+    estimated_cost: 12.50
+    file: "realtime_app/template.yaml"
+    popular: false
+
+  - id: "enterprise_crm"
+    name: "Enterprise CRM System"
+    category: "enterprise"
+    difficulty: "advanced"
+    icon: "🏢"
+    tags: [crm, enterprise, sales, customers]
+    estimated_duration: "45 minutes"
+    estimated_cost: 24.00
+    file: "enterprise_crm/template.yaml"
+    popular: false
+
+  - id: "content_platform"
+    name: "Content Management Platform"
+    category: "web"
+    difficulty: "intermediate"
+    icon: "📝"
+    tags: [cms, content, headless, seo]
+    estimated_duration: "28 minutes"
+    estimated_cost: 14.00
+    file: "content_platform/template.yaml"
+    popular: true
+
+  - id: "iot_system"
+    name: "IoT System"
+    category: "iot"
+    difficulty: "advanced"
+    icon: "🌐"
+    tags: [iot, mqtt, sensors, monitoring]
+    estimated_duration: "35 minutes"
+    estimated_cost: 18.50
+    file: "iot_system/template.yaml"
+    popular: false
+
+  - id: "data_pipeline"
+    name: "Data Pipeline"
+    category: "data"
+    difficulty: "advanced"
+    icon: "📊"
+    tags: [data, etl, airflow, analytics]
+    estimated_duration: "30 minutes"
+    estimated_cost: 14.00
+    file: "data_pipeline/template.yaml"
+    popular: true
+
+  - id: "api_backend"
+    name: "REST API Backend"
+    category: "backend"
+    difficulty: "beginner"
+    icon: "🔌"
+    tags: [api, rest, backend, fastapi]
+    estimated_duration: "20 minutes"
+    estimated_cost: 10.50
+    file: "api_backend/template.yaml"
+    popular: true
+
+  - id: "web3_dapp"
+    name: "Web3 Decentralized Application"
+    category: "blockchain"
+    difficulty: "expert"
+    icon: "⛓️"
+    tags: [web3, blockchain, ethereum, solidity, nft]
+    estimated_duration: "38 minutes"
+    estimated_cost: 19.00
+    file: "web3_dapp/template.yaml"
+    popular: false
+
+categories:
+  - id: "web"
+    name: "Web Applications"
+    description: "Full-stack web applications and platforms"
+    count: 5
+
+  - id: "mobile"
+    name: "Mobile Applications"
+    description: "Native and cross-platform mobile apps"
+    count: 1
+
+  - id: "backend"
+    name: "Backend & APIs"
+    description: "Backend services and API systems"
+    count: 2
+
+  - id: "ai_ml"
+    name: "AI & Machine Learning"
+    description: "ML platforms and AI applications"
+    count: 1
+
+  - id: "data"
+    name: "Data & Analytics"
+    description: "Data pipelines and analytics systems"
+    count: 1
+
+  - id: "iot"
+    name: "IoT & Embedded"
+    description: "Internet of Things and embedded systems"
+    count: 1
+
+  - id: "enterprise"
+    name: "Enterprise Solutions"
+    description: "Large-scale enterprise applications"
+    count: 1
+
+  - id: "blockchain"
+    name: "Blockchain & Web3"
+    description: "Decentralized applications and smart contracts"
+    count: 1
+
+difficulty_levels:
+  - beginner: "Perfect for getting started"
+  - intermediate: "Requires some experience"
+  - advanced: "Complex features and integrations"
+  - expert: "Advanced patterns and architecture"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"

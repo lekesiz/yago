@@ -1,0 +1,74 @@
+# YAGO v7.1 Template: IoT System
+name: "IoT System"
+id: "iot_system"
+version: "1.0.0"
+category: "iot"
+description: "IoT platform with device management, data ingestion, and real-time monitoring"
+icon: "🌐"
+
+tags: [iot, mqtt, sensors, monitoring, timeseries]
+difficulty: "advanced"
+estimated_duration: "35 minutes"
+estimated_tokens: 52000
+estimated_cost: 18.50
+
+tech_stack:
+  language: "Python 3.11"
+  protocol: "MQTT (Mosquitto)"
+  database: "InfluxDB (time-series)"
+  cache: "Redis"
+  api: "FastAPI"
+  visualization: "Grafana"
+  device_sdk: "AWS IoT SDK"
+  message_broker: "RabbitMQ"
+
+agents:
+  - PlannerAgent
+  - CoderAgent
+  - DatabaseAgent
+  - PerformanceAgent
+  - MonitoringAgent
+  - SecurityAgent
+  - DevOpsAgent
+
+features:
+  - Device registration & provisioning
+  - MQTT broker
+  - Real-time data ingestion
+  - Time-series data storage
+  - Device management
+  - Firmware updates (OTA)
+  - Alert & notification system
+  - Real-time dashboards
+  - Historical data analysis
+  - Device groups
+  - Rule engine
+  - Data export
+
+device_types:
+  - sensors (temperature, humidity, etc.)
+  - actuators
+  - gateways
+  - edge_devices
+
+data_pipeline:
+  - device → MQTT → ingestion_service → InfluxDB
+  - rule_engine → alerts → notification_service
+
+deployment:
+  platform: "AWS IoT Core / Azure IoT Hub"
+  edge: "Docker containers"
+  monitoring: "Grafana + Prometheus"
+
+success_criteria:
+  - "MQTT broker operational"
+  - "Data ingestion < 100ms"
+  - "Real-time dashboards"
+  - "OTA updates working"
+  - "Supports 10K+ devices"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

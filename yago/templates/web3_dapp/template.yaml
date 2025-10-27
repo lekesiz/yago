@@ -1,0 +1,78 @@
+# YAGO v7.1 Template: Web3 DApp
+name: "Web3 Decentralized Application"
+id: "web3_dapp"
+version: "1.0.0"
+category: "blockchain"
+description: "Full-stack Web3 DApp with smart contracts, wallet integration, and NFT support"
+icon: "⛓️"
+
+tags: [web3, blockchain, ethereum, solidity, nft, defi]
+difficulty: "expert"
+estimated_duration: "38 minutes"
+estimated_tokens: 54000
+estimated_cost: 19.00
+
+tech_stack:
+  frontend: "React + TypeScript"
+  blockchain: "Ethereum / Polygon"
+  smart_contracts: "Solidity 0.8.x"
+  development: "Hardhat"
+  wallet: "Ethers.js + WalletConnect"
+  storage: "IPFS"
+  indexing: "The Graph"
+  backend: "Node.js + Express"
+  database: "MongoDB"
+
+agents:
+  - PlannerAgent
+  - CoderAgent
+  - SecurityAgent
+  - FrontendAgent
+  - BlockchainAgent
+  - TesterAgent
+  - DevOpsAgent
+
+features:
+  - Smart contract development
+  - Wallet connection (MetaMask, WalletConnect)
+  - Token creation (ERC-20)
+  - NFT minting & trading (ERC-721/1155)
+  - Decentralized storage (IPFS)
+  - Web3 authentication
+  - Transaction handling
+  - Gas optimization
+  - Multi-chain support
+  - Subgraph indexing
+
+smart_contracts:
+  - Token contract (ERC-20)
+  - NFT contract (ERC-721)
+  - Marketplace contract
+  - Staking contract
+  - Governance contract
+
+security:
+  - Smart contract auditing
+  - Reentrancy protection
+  - Access control
+  - Front-running protection
+  - Gas limit handling
+
+deployment:
+  testnet: "Goerli / Mumbai"
+  mainnet: "Ethereum / Polygon"
+  frontend: "Vercel / Fleek"
+  contracts: "Hardhat Deploy"
+
+success_criteria:
+  - "Smart contracts deployed"
+  - "Wallet integration working"
+  - "NFT minting functional"
+  - "Gas optimized"
+  - "Security audit passed"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

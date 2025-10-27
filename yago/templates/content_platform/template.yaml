@@ -1,0 +1,69 @@
+# YAGO v7.1 Template: Content Platform
+name: "Content Management Platform"
+id: "content_platform"
+version: "1.0.0"
+category: "web"
+description: "Modern content platform with headless CMS, search, and CDN optimization"
+icon: "📝"
+
+tags: [cms, content, headless, seo, nextjs]
+difficulty: "intermediate"
+estimated_duration: "28 minutes"
+estimated_tokens: 41000
+estimated_cost: 14.00
+
+tech_stack:
+  frontend: "Next.js 14 + TypeScript"
+  cms: "Strapi / Contentful"
+  search: "Algolia"
+  database: "MongoDB"
+  cdn: "Cloudflare / CloudFront"
+  image_optimization: "Cloudinary"
+  analytics: "Google Analytics 4"
+
+agents:
+  - PlannerAgent
+  - FrontendAgent
+  - CoderAgent
+  - PerformanceAgent
+  - DevOpsAgent
+
+features:
+  - Headless CMS
+  - Rich text editor
+  - Media library
+  - SEO optimization
+  - Multi-language support
+  - Content versioning
+  - Preview mode
+  - Scheduled publishing
+  - Advanced search
+  - Content categorization
+  - Tags & taxonomy
+  - CDN caching
+
+content_types:
+  - blog_posts
+  - pages
+  - products
+  - authors
+  - categories
+  - media
+
+deployment:
+  frontend: "Vercel / Netlify"
+  cms: "Strapi Cloud / Contentful"
+  cdn: "Cloudflare"
+
+success_criteria:
+  - "CMS fully functional"
+  - "< 1s page load time"
+  - "SEO score 95+"
+  - "Search < 50ms"
+  - "Image optimization working"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

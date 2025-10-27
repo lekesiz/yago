@@ -1,0 +1,79 @@
+# YAGO v7.1 Template: REST API Backend
+name: "REST API Backend"
+id: "api_backend"
+version: "1.0.0"
+category: "backend"
+description: "Production-ready REST API with authentication, rate limiting, and documentation"
+icon: "🔌"
+
+tags: [api, rest, backend, fastapi, authentication]
+difficulty: "beginner"
+estimated_duration: "20 minutes"
+estimated_tokens: 32000
+estimated_cost: 10.50
+
+tech_stack:
+  framework: "FastAPI"
+  language: "Python 3.11"
+  database: "PostgreSQL"
+  orm: "SQLAlchemy"
+  auth: "JWT"
+  cache: "Redis"
+  docs: "Swagger + ReDoc"
+  validation: "Pydantic"
+
+agents:
+  - PlannerAgent
+  - CoderAgent
+  - SecurityAgent
+  - DatabaseAgent
+  - APIDesignAgent
+  - TesterAgent
+  - DevOpsAgent
+
+features:
+  - RESTful API endpoints
+  - JWT authentication
+  - Rate limiting
+  - Input validation
+  - Error handling
+  - API documentation
+  - CORS configuration
+  - Request logging
+  - Database migrations
+  - Health checks
+  - API versioning
+
+endpoints:
+  - Authentication (login, register, refresh)
+  - CRUD operations
+  - Search & filtering
+  - Pagination
+  - File uploads
+  - Webhooks
+
+security:
+  - JWT tokens
+  - Password hashing (bcrypt)
+  - Rate limiting (Redis)
+  - SQL injection prevention
+  - XSS protection
+  - CSRF protection
+
+deployment:
+  platform: "Docker"
+  web_server: "Uvicorn"
+  reverse_proxy: "Nginx"
+
+success_criteria:
+  - "All endpoints functional"
+  - "Authentication working"
+  - "API docs generated"
+  - "< 100ms response time"
+  - "90%+ test coverage"
+
+metadata:
+  author: "YAGO Team"
+  created_at: "2025-10-27"
+  version: "1.0.0"
+  status: "stable"

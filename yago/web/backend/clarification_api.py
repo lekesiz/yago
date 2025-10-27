@@ -314,7 +314,7 @@ async def start_clarification(request: StartClarificationRequest):
         "project_idea": request.project_idea,
         "depth": request.depth,
         "user_id": request.user_id,
-        "questions": [q.dict() for q in questions],
+        "questions": [q.model_dump() for q in questions],
         "answers": {},
         "current_index": 0,
         "created_at": datetime.now().isoformat(),
@@ -558,6 +558,15 @@ async def list_sessions():
             for sid, s in SESSIONS.items()
         ]
     }
+
+
+# Include template router
+try:
+    from template_api import router as template_router
+    app.include_router(template_router)
+    print("✅ Template API routes loaded")
+except Exception as e:
+    print(f"⚠️  Template API routes not loaded: {e}")
 
 
 if __name__ == "__main__":
