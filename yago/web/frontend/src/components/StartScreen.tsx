@@ -5,9 +5,11 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { TemplateSelector } from './TemplateSelector';
+import type { TemplateInfo } from '../types/template';
 
 interface StartScreenProps {
-  onStart: (projectIdea: string, depth: 'minimal' | 'standard' | 'full') => void;
+  onStart: (projectIdea: string, depth: 'minimal' | 'standard' | 'full', template?: TemplateInfo | null) => void;
   loading?: boolean;
 }
 
@@ -15,10 +17,20 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
   const [projectIdea, setProjectIdea] = useState('');
   const [depth, setDepth] = useState<'minimal' | 'standard' | 'full'>('standard');
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'custom' | 'template'>('template');
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateInfo | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // If template tab and template selected, use template's project idea
+    if (activeTab === 'template' && selectedTemplate) {
+      const templateIdea = `${selectedTemplate.name} - ${selectedTemplate.description || 'Professional template'}`;
+      onStart(templateIdea, depth, selectedTemplate);
+      return;
+    }
+
+    // Otherwise validate custom project idea
     if (projectIdea.trim().length < 10) {
       setError('Please provide at least 10 characters describing your project');
       return;
@@ -30,7 +42,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
     }
 
     setError('');
-    onStart(projectIdea.trim(), depth);
+    onStart(projectIdea.trim(), depth, null);
   };
 
   const depthOptions = [
@@ -99,8 +111,46 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
           transition={{ duration: 0.5, delay: 0.3 }}
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700"
         >
-          <form onSubmit={handleSubmit}>
-            {/* Project Idea Input */}
+          {/* Tab Navigation */}
+          <div className="flex gap-2 mb-8 border-b border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => setActiveTab('template')}
+              className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+                activeTab === 'template'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              📦 Choose Template
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('custom')}
+              className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+                activeTab === 'custom'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              ✍️ Custom Project
+            </button>
+          </div>
+
+          {/* Template Tab */}
+          {activeTab === 'template' && (
+            <div className="mb-8">
+              <TemplateSelector
+                onSelectTemplate={setSelectedTemplate}
+                selectedTemplate={selectedTemplate}
+              />
+            </div>
+          )}
+
+          {/* Custom Project Tab */}
+          {activeTab === 'custom' && (
+            <form onSubmit={handleSubmit}>
+              {/* Project Idea Input */}
             <div className="mb-6">
               <label
                 htmlFor="project-idea"
@@ -191,61 +241,104 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
               </div>
             </div>
 
-            {/* Submit Button */}
-            <motion.button
-              type="submit"
-              disabled={loading || projectIdea.trim().length < 10}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700
-                       hover:from-primary-700 hover:to-primary-800 text-white font-semibold text-lg
-                       shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed
-                       transition-all duration-200 flex items-center justify-center gap-3"
-            >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Starting Clarification...
-                </>
-              ) : (
-                <>
-                  Start Clarification
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </>
-              )}
-            </motion.button>
           </form>
+          )}
+
+          {/* Depth Selection - Common for both tabs */}
+          <div className="mb-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              How detailed should the clarification be?
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {depthOptions.map((option) => (
+                <motion.button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setDepth(option.value)}
+                  disabled={loading}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                    ${
+                      depth === option.value
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                    }`}
+                >
+                  <div className="text-3xl mb-2">{option.icon}</div>
+                  <div className="font-semibold text-gray-900 dark:text-white mb-1">
+                    {option.title}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    {option.description}
+                  </div>
+                  <div className="text-xs text-primary-600 dark:text-primary-400 font-medium">
+                    {option.time}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Button - Common for both tabs */}
+          <motion.button
+            type="button"
+            onClick={handleSubmit}
+            disabled={
+              loading ||
+              (activeTab === 'custom' && projectIdea.trim().length < 10) ||
+              (activeTab === 'template' && !selectedTemplate)
+            }
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700
+                     hover:from-primary-700 hover:to-primary-800 text-white font-semibold text-lg
+                     shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed
+                     transition-all duration-200 flex items-center justify-center gap-3"
+          >
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Starting Clarification...
+              </>
+            ) : (
+              <>
+                Start Clarification
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </>
+            )}
+          </motion.button>
         </motion.div>
 
         {/* Features */}
