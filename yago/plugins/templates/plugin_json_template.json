@@ -1,0 +1,97 @@
+{
+  "__comment": "YAGO Plugin Metadata Template - Replace TODO values with your plugin information",
+
+  "id": "my_plugin_id",
+  "name": "My Plugin Name",
+  "version": "1.0.0",
+
+  "type": "tool",
+  "__type_options": ["agent", "dashboard", "integration", "workflow", "tool", "preprocessor", "postprocessor", "middleware", "extension"],
+
+  "category": "general",
+  "__category_examples": ["ai", "data", "integration", "utility", "analytics", "communication"],
+
+  "description": "Short one-line description of your plugin",
+  "long_description": "Detailed description explaining what your plugin does, its features, and use cases. This can be multiple paragraphs.",
+
+  "author": "Your Name or Organization",
+  "author_email": "your.email@example.com",
+  "homepage": "https://your-plugin-website.com",
+  "repository": "https://github.com/yourusername/your-plugin",
+  "documentation": "https://docs.your-plugin.com",
+
+  "min_yago_version": "7.2.0",
+  "max_yago_version": null,
+
+  "dependencies": [
+    "__comment": "List Python package dependencies here",
+    "requests>=2.28.0",
+    "pandas>=1.5.0"
+  ],
+
+  "plugin_dependencies": [
+    "__comment": "List other YAGO plugins this plugin depends on",
+    "required_plugin_id"
+  ],
+
+  "tags": [
+    "tag1",
+    "tag2",
+    "tag3"
+  ],
+
+  "capabilities": [
+    "__comment": "List what your plugin can do",
+    "capability1",
+    "capability2"
+  ],
+
+  "configurable": true,
+
+  "config_schema": {
+    "__comment": "JSON Schema for plugin configuration",
+    "type": "object",
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "description": "API key for external service",
+        "default": ""
+      },
+      "timeout": {
+        "type": "number",
+        "description": "Request timeout in seconds",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 300
+      },
+      "enabled_features": {
+        "type": "array",
+        "description": "List of enabled features",
+        "items": {
+          "type": "string"
+        },
+        "default": ["feature1", "feature2"]
+      },
+      "log_level": {
+        "type": "string",
+        "description": "Logging level",
+        "enum": ["DEBUG", "INFO", "WARNING", "ERROR"],
+        "default": "INFO"
+      }
+    },
+    "required": ["api_key"]
+  },
+
+  "default_config": {
+    "api_key": "",
+    "timeout": 30,
+    "enabled_features": ["feature1", "feature2"],
+    "log_level": "INFO"
+  },
+
+  "auto_enable": false,
+  "__auto_enable_comment": "Set to true to automatically enable plugin on load",
+
+  "singleton": true,
+  "__singleton_comment": "Set to false if multiple instances are allowed"
+}

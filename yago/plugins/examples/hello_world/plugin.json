@@ -1,0 +1,55 @@
+{
+  "id": "hello_world",
+  "name": "Hello World Plugin",
+  "version": "1.0.0",
+  "type": "tool",
+  "category": "examples",
+  "description": "Simple example plugin that greets users",
+  "long_description": "A demonstration plugin showing the basic structure and capabilities of YAGO plugins. This plugin provides a simple greeting functionality.",
+  "author": "YAGO Team",
+  "author_email": "team@yago.dev",
+  "homepage": "https://github.com/yourusername/yago",
+  "repository": "https://github.com/yourusername/yago",
+  "documentation": "https://yago.dev/docs/plugins/hello-world",
+  "min_yago_version": "7.2.0",
+  "dependencies": [],
+  "plugin_dependencies": [],
+  "tags": [
+    "example",
+    "greeting",
+    "tutorial"
+  ],
+  "capabilities": [
+    "greeting",
+    "personalization"
+  ],
+  "configurable": true,
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "greeting_style": {
+        "type": "string",
+        "enum": ["formal", "casual", "friendly"],
+        "default": "friendly",
+        "description": "Style of greeting to use"
+      },
+      "include_time": {
+        "type": "boolean",
+        "default": true,
+        "description": "Include current time in greeting"
+      },
+      "language": {
+        "type": "string",
+        "default": "en",
+        "description": "Language for greetings"
+      }
+    }
+  },
+  "default_config": {
+    "greeting_style": "friendly",
+    "include_time": true,
+    "language": "en"
+  },
+  "auto_enable": false,
+  "singleton": true
+}
