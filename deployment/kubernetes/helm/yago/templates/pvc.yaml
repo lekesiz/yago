@@ -1,0 +1,50 @@
+{{- if .Values.persistence.enabled }}
+{{- if .Values.persistence.data.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "yago.fullname" . }}-data-pvc
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "yago.labels" . | nindent 4 }}
+    component: storage
+  {{- with .Values.persistence.data.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.data.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.data.size }}
+  {{- if .Values.persistence.data.storageClass }}
+  storageClassName: {{ .Values.persistence.data.storageClass }}
+  {{- end }}
+{{- end }}
+
+---
+{{- if .Values.persistence.plugins.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "yago.fullname" . }}-plugins-pvc
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "yago.labels" . | nindent 4 }}
+    component: storage
+  {{- with .Values.persistence.plugins.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.plugins.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.plugins.size }}
+  {{- if .Values.persistence.plugins.storageClass }}
+  storageClassName: {{ .Values.persistence.plugins.storageClass }}
+  {{- end }}
+{{- end }}
+{{- end }}

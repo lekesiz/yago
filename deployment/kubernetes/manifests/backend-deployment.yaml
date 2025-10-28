@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yago-backend
+  namespace: yago
+  labels:
+    app: yago
+    component: backend
+    version: v7.2
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: yago
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: yago
+        component: backend
+        version: v7.2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/api/v1/monitoring/prometheus"
+    spec:
+      serviceAccountName: yago-backend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+      - name: backend
+        image: yago/backend:v7.2  # Replace with your actual image
+        imagePullPolicy: Always
+
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: yago-config
+              key: ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: yago-config
+              key: LOG_LEVEL
+        - name: BACKEND_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: yago-config
+              key: BACKEND_PORT
+        - name: DATABASE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: yago-config
+              key: DATABASE_PATH
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: yago-secrets
+              key: OPENAI_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: yago-secrets
+              key: ANTHROPIC_API_KEY
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: yago-secrets
+              key: GOOGLE_API_KEY
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: yago-secrets
+              key: SESSION_SECRET
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: yago-secrets
+              key: JWT_SECRET
+
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+
+        livenessProbe:
+          httpGet:
+            path: /api/v1/monitoring/health/liveness
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /api/v1/monitoring/health/readiness
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        startupProbe:
+          httpGet:
+            path: /api/v1/monitoring/health/liveness
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 30
+
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: plugins
+          mountPath: /app/yago/plugins/installed
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: yago-data-pvc
+      - name: plugins
+        persistentVolumeClaim:
+          claimName: yago-plugins-pvc
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - backend
+              topologyKey: kubernetes.io/hostname
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: yago-backend
+  namespace: yago
+  labels:
+    app: yago
+    component: backend

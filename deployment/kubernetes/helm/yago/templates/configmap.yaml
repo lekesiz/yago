@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "yago.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "yago.labels" . | nindent 4 }}
+    component: config
+data:
+  {{- range $key, $value := .Values.backend.env }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  FRONTEND_API_URL: "http://{{ include "yago.backend.serviceName" . }}:{{ .Values.backend.service.port }}"

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yago-backend
+  namespace: yago
+  labels:
+    app: yago
+    component: backend
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+spec:
+  type: ClusterIP
+  selector:
+    app: yago
+    component: backend
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600

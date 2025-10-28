@@ -1,0 +1,29 @@
+apiVersion: v2
+name: yago
+description: YAGO - Yet Another Graph Orchestrator - AI Agent Orchestration Platform
+type: application
+version: 7.2.0
+appVersion: "7.2"
+
+keywords:
+  - ai
+  - agents
+  - orchestration
+  - llm
+  - automation
+
+home: https://github.com/yourusername/yago
+sources:
+  - https://github.com/yourusername/yago
+
+maintainers:
+  - name: YAGO Team
+    email: team@yago.dev
+
+icon: https://yago.dev/icon.png
+
+dependencies: []
+
+annotations:
+  category: AI/ML
+  licenses: Apache-2.0

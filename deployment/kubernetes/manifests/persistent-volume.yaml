@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: yago-data-pvc
+  namespace: yago
+  labels:
+    app: yago
+    component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard  # Change based on your cluster (gp2, standard, etc.)
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: yago-plugins-pvc
+  namespace: yago
+  labels:
+    app: yago
+    component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard

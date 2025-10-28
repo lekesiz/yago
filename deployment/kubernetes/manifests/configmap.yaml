@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yago-config
+  namespace: yago
+  labels:
+    app: yago
+    component: config
+data:
+  # Application Configuration
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+
+  # Backend Configuration
+  BACKEND_PORT: "8000"
+  BACKEND_HOST: "0.0.0.0"
+  BACKEND_WORKERS: "4"
+
+  # Frontend Configuration
+  FRONTEND_PORT: "3000"
+  FRONTEND_API_URL: "http://yago-backend:8000"
+
+  # Database Configuration
+  DATABASE_PATH: "/data/yago.db"
+
+  # Redis Configuration (optional)
+  REDIS_HOST: "yago-redis"
+  REDIS_PORT: "6379"
+
+  # Monitoring
+  METRICS_ENABLED: "true"
+  HEALTH_CHECK_ENABLED: "true"
+
+  # CORS Configuration
+  CORS_ORIGINS: "*"
+
+  # Feature Flags
+  ENABLE_PLUGINS: "true"
+  ENABLE_COLLABORATION: "true"
+  ENABLE_MONITORING: "true"

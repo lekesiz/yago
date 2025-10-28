@@ -1,0 +1,115 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: yago-ingress
+  namespace: yago
+  labels:
+    app: yago
+  annotations:
+    # NGINX Ingress Controller annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+
+    # WebSocket support
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+
+    # Certificate Manager (if using cert-manager)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+spec:
+  ingressClassName: nginx
+
+  tls:
+  - hosts:
+    - yago.example.com
+    secretName: yago-tls-cert
+
+  rules:
+  - host: yago.example.com
+    http:
+      paths:
+      # API routes go to backend
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: yago-backend
+            port:
+              number: 8000
+
+      # WebSocket routes go to backend
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: yago-backend
+            port:
+              number: 8000
+
+      # Everything else goes to frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: yago-frontend
+            port:
+              number: 3000
+
+---
+# Alternative Ingress for AWS ALB (Application Load Balancer)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: yago-ingress-alb
+  namespace: yago
+  labels:
+    app: yago
+  annotations:
+    # AWS ALB Ingress Controller annotations
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:region:account-id:certificate/certificate-id
+    alb.ingress.kubernetes.io/healthcheck-path: /api/v1/monitoring/health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '30'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '3'
+spec:
+  rules:
+  - host: yago.example.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: yago-backend
+            port:
+              number: 8000
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: yago-backend
+            port:
+              number: 8000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: yago-frontend
+            port:
+              number: 3000
