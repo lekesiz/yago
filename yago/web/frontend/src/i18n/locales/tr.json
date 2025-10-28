@@ -1,0 +1,119 @@
+{
+  "common": {
+    "welcome": "YAGO'ya Hoş Geldiniz",
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "success": "Başarılı",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "close": "Kapat",
+    "back": "Geri",
+    "next": "İleri",
+    "previous": "Önceki",
+    "finish": "Bitir",
+    "submit": "Gönder",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "sort": "Sırala",
+    "refresh": "Yenile",
+    "export": "Dışa Aktar",
+    "import": "İçe Aktar"
+  },
+  "navigation": {
+    "home": "Ana Sayfa",
+    "dashboards": "Gösterge Panelleri",
+    "cost": "Maliyet Takibi",
+    "collaboration": "İşbirliği",
+    "benchmark": "Performans Testi",
+    "settings": "Ayarlar",
+    "profile": "Profil",
+    "logout": "Çıkış Yap"
+  },
+  "cost": {
+    "title": "Maliyet Takip Paneli",
+    "totalCost": "Toplam Maliyet",
+    "budget": "Bütçe",
+    "remaining": "Kalan",
+    "spent": "Harcanan",
+    "projected": "Öngörülen Maliyet",
+    "optimization": "Maliyet Optimizasyonu",
+    "suggestions": "Öneriler",
+    "breakdown": "Maliyet Dağılımı",
+    "byAgent": "Agent'a Göre",
+    "byPhase": "Aşamaya Göre",
+    "byModel": "Modele Göre",
+    "alert": {
+      "budgetExceeded": "Bütçe Aşıldı!",
+      "approaching": "Bütçe Limitine Yaklaşılıyor",
+      "normal": "Bütçe Dahilinde"
+    }
+  },
+  "collaboration": {
+    "title": "Agent İşbirliği",
+    "agents": "Agent'lar",
+    "messages": "Mesajlar",
+    "context": "Paylaşılan Bağlam",
+    "conflicts": "Çakışmalar",
+    "status": {
+      "idle": "Boşta",
+      "busy": "Meşgul",
+      "waiting": "Bekliyor",
+      "error": "Hata"
+    },
+    "messageTypes": {
+      "codeReady": "Kod Hazır",
+      "testResults": "Test Sonuçları",
+      "reviewNeeded": "İnceleme Gerekli",
+      "issueFound": "Sorun Bulundu"
+    }
+  },
+  "benchmark": {
+    "title": "Performans Testi",
+    "run": "Test Başlat",
+    "results": "Sonuçlar",
+    "trends": "Performans Trendleri",
+    "comparison": "Karşılaştırma",
+    "metrics": {
+      "latency": "Gecikme",
+      "throughput": "İşlem Hızı",
+      "accuracy": "Doğruluk",
+      "cost": "İstek Başına Maliyet"
+    }
+  },
+  "clarification": {
+    "title": "Proje Açıklama",
+    "question": "Soru",
+    "answer": "Cevap",
+    "progress": "İlerleme",
+    "questionsRemaining": "Kalan Sorular",
+    "estimatedTime": "Tahmini Süre",
+    "skip": "Geç",
+    "complete": "Tamamla"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": "Dil",
+    "theme": "Tema",
+    "notifications": "Bildirimler",
+    "apiKeys": "API Anahtarları",
+    "preferences": "Tercihler"
+  },
+  "errors": {
+    "generic": "Bir hata oluştu",
+    "network": "Ağ hatası",
+    "notFound": "Bulunamadı",
+    "unauthorized": "Yetkisiz",
+    "forbidden": "Yasak",
+    "serverError": "Sunucu hatası"
+  },
+  "validation": {
+    "required": "Bu alan zorunludur",
+    "email": "Geçersiz e-posta adresi",
+    "minLength": "Minimum uzunluk {{min}} karakterdir",
+    "maxLength": "Maksimum uzunluk {{max}} karakterdir",
+    "number": "Sayı olmalıdır",
+    "positive": "Pozitif olmalıdır"
+  }
+}
