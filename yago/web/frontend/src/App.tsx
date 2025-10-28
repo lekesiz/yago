@@ -9,6 +9,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ClarificationFlow } from './components/ClarificationFlow';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { AIModelsTab } from './components/AIModelsTab';
+import { AnalyticsTab } from './components/AnalyticsTab';
+import { MarketplaceTab } from './components/MarketplaceTab';
 import './i18n/config';
 import './index.css';
 

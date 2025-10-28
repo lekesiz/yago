@@ -492,5 +492,161 @@ async def get_providers():
 
     return {"providers": list(providers.values())}
 
+# Analytics endpoints
+@app.get("/api/v1/analytics/metrics")
+async def get_analytics_metrics():
+    """Get analytics metrics"""
+    import random
+    return {
+        "total_requests": random.randint(1000, 5000),
+        "total_tokens": random.randint(100000, 500000),
+        "total_cost": round(random.uniform(10, 100), 2),
+        "avg_latency_ms": random.randint(100, 500),
+        "success_rate": round(random.uniform(95, 99.9), 2),
+        "active_users": random.randint(10, 50),
+        "period": "last_30_days"
+    }
+
+@app.get("/api/v1/analytics/usage")
+async def get_usage_stats():
+    """Get usage statistics over time"""
+    import random
+    from datetime import datetime, timedelta
+
+    data = []
+    for i in range(30):
+        date = (datetime.now() - timedelta(days=29-i)).strftime("%Y-%m-%d")
+        data.append({
+            "date": date,
+            "requests": random.randint(50, 200),
+            "tokens": random.randint(5000, 20000),
+            "cost": round(random.uniform(0.5, 5), 2)
+        })
+
+    return {"usage": data, "total_days": 30}
+
+@app.get("/api/v1/analytics/models-usage")
+async def get_models_usage():
+    """Get usage breakdown by model"""
+    import random
+
+    usage = []
+    for model in models_db[:5]:
+        usage.append({
+            "model_id": model["id"],
+            "model_name": model["name"],
+            "requests": random.randint(100, 1000),
+            "tokens": random.randint(10000, 100000),
+            "cost": round(random.uniform(5, 50), 2),
+            "percentage": round(random.uniform(10, 30), 1)
+        })
+
+    return {"models": usage}
+
+# Marketplace endpoints
+marketplace_items = [
+    {
+        "id": "plugin-slack",
+        "name": "Slack Integration",
+        "type": "plugin",
+        "description": "Send AI responses to Slack channels",
+        "author": "YAGO Team",
+        "version": "1.2.0",
+        "downloads": 1234,
+        "rating": 4.8,
+        "price": "free",
+        "icon": "💬",
+        "tags": ["communication", "integration", "slack"],
+        "installed": False
+    },
+    {
+        "id": "plugin-github",
+        "name": "GitHub Integration",
+        "type": "plugin",
+        "description": "Auto-generate code reviews and PR summaries",
+        "author": "YAGO Team",
+        "version": "2.0.1",
+        "downloads": 2456,
+        "rating": 4.9,
+        "price": "free",
+        "icon": "🐙",
+        "tags": ["dev-tools", "integration", "github"],
+        "installed": False
+    },
+    {
+        "id": "template-api",
+        "name": "REST API Template",
+        "type": "template",
+        "description": "Production-ready REST API with authentication",
+        "author": "Community",
+        "version": "1.5.0",
+        "downloads": 5678,
+        "rating": 4.7,
+        "price": "free",
+        "icon": "🔌",
+        "tags": ["template", "api", "backend"],
+        "installed": False
+    },
+    {
+        "id": "plugin-analytics",
+        "name": "Advanced Analytics",
+        "type": "plugin",
+        "description": "Detailed analytics and custom dashboards",
+        "author": "YAGO Pro",
+        "version": "3.1.0",
+        "downloads": 890,
+        "rating": 4.6,
+        "price": "$9.99/mo",
+        "icon": "📊",
+        "tags": ["analytics", "premium", "dashboards"],
+        "installed": False
+    },
+    {
+        "id": "integration-notion",
+        "name": "Notion Integration",
+        "type": "integration",
+        "description": "Save AI conversations to Notion databases",
+        "author": "Community",
+        "version": "1.0.5",
+        "downloads": 3421,
+        "rating": 4.5,
+        "price": "free",
+        "icon": "📝",
+        "tags": ["productivity", "integration", "notion"],
+        "installed": False
+    }
+]
+
+@app.get("/api/v1/marketplace/items")
+async def get_marketplace_items(item_type: Optional[str] = None):
+    """Get marketplace items"""
+    filtered = marketplace_items
+    if item_type:
+        filtered = [item for item in filtered if item["type"] == item_type]
+
+    return {"items": filtered, "total": len(filtered)}
+
+@app.get("/api/v1/marketplace/items/{item_id}")
+async def get_marketplace_item(item_id: str):
+    """Get specific marketplace item"""
+    item = next((i for i in marketplace_items if i["id"] == item_id), None)
+    if item:
+        return item
+    return {"error": "Item not found"}
+
+@app.post("/api/v1/marketplace/items/{item_id}/install")
+async def install_marketplace_item(item_id: str):
+    """Install a marketplace item"""
+    item = next((i for i in marketplace_items if i["id"] == item_id), None)
+    if not item:
+        return {"error": "Item not found"}
+
+    return {
+        "item_id": item_id,
+        "status": "installed",
+        "message": f"{item['name']} installed successfully",
+        "version": item["version"]
+    }
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
