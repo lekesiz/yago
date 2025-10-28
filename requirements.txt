@@ -56,7 +56,6 @@ numpy>=1.26.2
 # Testing (optional, for development)
 pytest>=7.4.3
 pytest-asyncio>=0.21.1
-httpx-mock>=0.0.1
 
 # Code Quality (optional, for development)
 black>=23.12.0

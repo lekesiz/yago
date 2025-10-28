@@ -236,7 +236,7 @@ cd yago/web/frontend
 # Set environment variable for backend URL
 export REACT_APP_API_URL=http://localhost:8000
 
-nohup npm start > ../../../logs/frontend.log 2>&1 &
+nohup npm run dev > ../../../logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 
 echo "Frontend başlatılıyor (PID: $FRONTEND_PID)..."
