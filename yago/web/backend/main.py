@@ -1,10 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Dict, List, Optional
 import uvicorn
+import uuid
+from datetime import datetime
 
 app = FastAPI(
     title="YAGO v8.0 API",
-    description="Yet Another Genius Orchestrator",
+    description="Yet Another Genius Orchestrator - Enterprise AI Platform",
     version="8.0.0"
 )
 
@@ -17,13 +20,295 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mock data stores
+templates_db = [
+    {
+        "id": "web_app",
+        "name": "Web Application",
+        "description": "Full-stack web application with modern frontend and backend",
+        "category": "web",
+        "difficulty": "intermediate",
+        "is_popular": True,
+        "popular": True,
+        "icon": "🌐",
+        "tags": ["react", "nodejs", "database"],
+        "estimated_time": "2-3 weeks",
+        "estimated_duration": "2-3 weeks",
+        "estimated_cost": 15.50,
+        "file": "web_app_template.yaml"
+    },
+    {
+        "id": "api_service",
+        "name": "REST API Service",
+        "description": "RESTful API backend with authentication and database",
+        "category": "backend",
+        "difficulty": "beginner",
+        "is_popular": True,
+        "popular": True,
+        "icon": "🔌",
+        "tags": ["api", "fastapi", "postgresql"],
+        "estimated_time": "1 week",
+        "estimated_duration": "1 week",
+        "estimated_cost": 8.75,
+        "file": "api_service_template.yaml"
+    },
+    {
+        "id": "mobile_app",
+        "name": "Mobile Application",
+        "description": "Cross-platform mobile app with React Native",
+        "category": "mobile",
+        "difficulty": "advanced",
+        "is_popular": True,
+        "popular": True,
+        "icon": "📱",
+        "tags": ["react-native", "mobile", "ios", "android"],
+        "estimated_time": "4-6 weeks",
+        "estimated_duration": "4-6 weeks",
+        "estimated_cost": 32.00,
+        "file": "mobile_app_template.yaml"
+    },
+    {
+        "id": "data_pipeline",
+        "name": "Data Pipeline",
+        "description": "ETL pipeline for data processing and analytics",
+        "category": "data",
+        "difficulty": "intermediate",
+        "is_popular": False,
+        "popular": False,
+        "icon": "📊",
+        "tags": ["python", "etl", "data-engineering"],
+        "estimated_time": "2 weeks",
+        "estimated_duration": "2 weeks",
+        "estimated_cost": 12.25,
+        "file": "data_pipeline_template.yaml"
+    }
+]
+
+categories_db = [
+    {"id": "web", "name": "Web Development", "count": 12},
+    {"id": "backend", "name": "Backend Services", "count": 8},
+    {"id": "mobile", "name": "Mobile Apps", "count": 5},
+    {"id": "data", "name": "Data Engineering", "count": 6}
+]
+
+# Root endpoints
 @app.get("/")
 async def root():
-    return {"message": "YAGO v8.0 API", "status": "running"}
+    return {"message": "YAGO v8.0 API", "status": "running", "version": "8.0.0"}
 
 @app.get("/health")
 async def health():
-    return {"status": "healthy"}
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+# Template endpoints
+@app.get("/api/v1/templates/")
+async def get_templates(category: Optional[str] = None, difficulty: Optional[str] = None, popular_only: Optional[bool] = None):
+    """Get all templates with optional filters"""
+    filtered = templates_db
+
+    if category:
+        filtered = [t for t in filtered if t.get("category") == category]
+    if difficulty:
+        filtered = [t for t in filtered if t.get("difficulty") == difficulty]
+    if popular_only:
+        filtered = [t for t in filtered if t.get("is_popular")]
+
+    return {"templates": filtered, "total": len(filtered)}
+
+@app.get("/api/v1/templates/categories")
+async def get_categories():
+    """Get template categories"""
+    return categories_db
+
+@app.get("/api/v1/templates/popular")
+async def get_popular_templates():
+    """Get popular templates only"""
+    return [t for t in templates_db if t.get("is_popular")]
+
+@app.get("/api/v1/templates/{template_id}")
+async def get_template(template_id: str):
+    """Get detailed template information"""
+    template = next((t for t in templates_db if t["id"] == template_id), None)
+    if template:
+        return {**template, "details": {
+            "prerequisites": ["Basic programming knowledge"],
+            "features": ["Modern architecture", "Best practices", "Documentation"],
+            "tech_stack": template.get("tags", [])
+        }}
+    return {"error": "Template not found"}
+
+@app.get("/api/v1/templates/{template_id}/preview")
+async def get_template_preview(template_id: str):
+    """Get template preview"""
+    template = next((t for t in templates_db if t["id"] == template_id), None)
+    if template:
+        return {
+            "template_id": template_id,
+            "preview": {
+                "structure": ["src/", "tests/", "docs/", "config/"],
+                "files": ["README.md", "package.json", ".gitignore"],
+                "commands": ["npm install", "npm start", "npm test"]
+            }
+        }
+    return {"error": "Template not found"}
+
+@app.post("/api/v1/templates/{template_id}/apply")
+async def apply_template(template_id: str, customizations: Optional[Dict] = None):
+    """Apply template to create new project"""
+    return {
+        "project_id": str(uuid.uuid4()),
+        "template_id": template_id,
+        "status": "created",
+        "message": "Template applied successfully"
+    }
+
+@app.get("/api/v1/templates/search")
+async def search_templates(q: str):
+    """Search templates"""
+    query_lower = q.lower()
+    results = [
+        t for t in templates_db
+        if query_lower in t["name"].lower() or
+           query_lower in t["description"].lower() or
+           any(query_lower in tag for tag in t.get("tags", []))
+    ]
+    return results
+
+@app.get("/api/v1/templates/health")
+async def templates_health():
+    """Health check for template system"""
+    return {"status": "healthy", "templates_count": len(templates_db)}
+
+# Clarification endpoints
+sessions_db: Dict[str, Dict] = {}
+
+@app.post("/api/v1/clarification/start")
+async def start_clarification(request: Dict):
+    """Start a new clarification session"""
+    session_id = str(uuid.uuid4())
+    sessions_db[session_id] = {
+        "session_id": session_id,
+        "project_idea": request.get("project_idea"),
+        "depth": request.get("depth", "standard"),
+        "user_id": request.get("user_id"),
+        "created_at": datetime.utcnow().isoformat(),
+        "current_question": 0,
+        "answers": {}
+    }
+
+    return {
+        "session_id": session_id,
+        "message": "Clarification session started",
+        "first_question": {
+            "id": "q1",
+            "text": "What is the primary purpose of your project?",
+            "type": "text",
+            "required": True
+        }
+    }
+
+@app.get("/api/v1/clarification/{session_id}")
+async def get_clarification_session(session_id: str):
+    """Get clarification session details"""
+    session = sessions_db.get(session_id)
+    if session:
+        return session
+    return {"error": "Session not found"}
+
+@app.post("/api/v1/clarification/{session_id}/answer")
+async def submit_answer(session_id: str, request: Dict):
+    """Submit an answer to clarification question"""
+    session = sessions_db.get(session_id)
+    if not session:
+        return {"error": "Session not found"}
+
+    question_id = request.get("question_id")
+    answer = request.get("answer")
+
+    session["answers"][question_id] = answer
+    session["current_question"] += 1
+
+    # Return next question or completion
+    if session["current_question"] >= 5:  # Max 5 questions for demo
+        return {
+            "status": "completed",
+            "message": "Clarification completed",
+            "summary": session["answers"]
+        }
+
+    next_q = session["current_question"] + 1
+    return {
+        "status": "in_progress",
+        "next_question": {
+            "id": f"q{next_q}",
+            "text": f"Question {next_q}: Tell us more about your requirements?",
+            "type": "text",
+            "required": False
+        }
+    }
+
+@app.get("/api/v1/clarification/{session_id}/progress")
+async def get_progress(session_id: str):
+    """Get session progress"""
+    session = sessions_db.get(session_id)
+    if not session:
+        return {"error": "Session not found"}
+
+    total_questions = 5
+    answered = len(session.get("answers", {}))
+
+    return {
+        "session_id": session_id,
+        "answered": answered,
+        "total": total_questions,
+        "percentage": (answered / total_questions) * 100
+    }
+
+@app.websocket("/api/v1/clarification/ws/{session_id}")
+async def websocket_clarification(websocket: WebSocket, session_id: str):
+    """WebSocket endpoint for real-time clarification"""
+    await websocket.accept()
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # Echo back for now
+            await websocket.send_json({
+                "type": "update",
+                "session_id": session_id,
+                "message": "Answer received",
+                "data": data
+            })
+    except WebSocketDisconnect:
+        print(f"WebSocket disconnected for session {session_id}")
+
+# Collaboration endpoints
+@app.get("/api/v1/collaboration/health")
+async def collaboration_health():
+    return {"status": "healthy", "service": "collaboration"}
+
+@app.post("/api/v1/collaboration/messages/send")
+async def send_message(request: Dict):
+    return {"status": "sent", "message_id": str(uuid.uuid4())}
+
+# Cost tracking endpoints
+@app.get("/api/v1/costs/health")
+async def costs_health():
+    return {"status": "healthy", "service": "costs"}
+
+@app.get("/api/v1/costs/summary/{project_id}")
+async def get_cost_summary(project_id: str):
+    return {
+        "project_id": project_id,
+        "total_cost": 0.0,
+        "cost_by_agent": {},
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+# Benchmark endpoints
+@app.get("/api/v1/benchmarks/health")
+async def benchmarks_health():
+    return {"status": "healthy", "service": "benchmarks"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,14 +1,19 @@
 /**
  * YAGO v8.0 - Main Dashboard
- * Modern dashboard showcasing all v8.0 features
+ * Modern dashboard showcasing all v8.0 features + Interactive Project Creation
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ClarificationFlow } from './components/ClarificationFlow';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
+import './i18n/config';
 import './index.css';
 
 const App: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
-  const [activeTab, setActiveTab] = useState<'overview' | 'models' | 'analytics' | 'marketplace'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'models' | 'analytics' | 'marketplace'>('overview');
 
   useEffect(() => {
     // Check backend health
@@ -57,14 +62,20 @@ const App: React.FC = () => {
         </div>
       </header>
 
+      {/* Language Switcher */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         <div className="flex space-x-2 bg-black/20 backdrop-blur-sm rounded-lg p-1">
           {[
-            { id: 'overview', label: '📊 Overview', icon: '📊' },
-            { id: 'models', label: '🤖 AI Models', icon: '🤖' },
-            { id: 'analytics', label: '📈 Analytics', icon: '📈' },
-            { id: 'marketplace', label: '🛒 Marketplace', icon: '🛒' },
+            { id: 'overview', label: '📊 Overview' },
+            { id: 'create', label: '✨ Create Project' },
+            { id: 'models', label: '🤖 AI Models' },
+            { id: 'analytics', label: '📈 Analytics' },
+            { id: 'marketplace', label: '🛒 Marketplace' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -83,11 +94,42 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'overview' && <OverviewTab />}
-        {activeTab === 'models' && <ModelsTab />}
-        {activeTab === 'analytics' && <AnalyticsTab />}
-        {activeTab === 'marketplace' && <MarketplaceTab />}
+        <ErrorBoundary>
+          <Suspense fallback={<div className="text-white text-center">Loading...</div>}>
+            {activeTab === 'overview' && <OverviewTab />}
+            {activeTab === 'create' && <ClarificationFlow />}
+            {activeTab === 'models' && <ModelsTab />}
+            {activeTab === 'analytics' && <AnalyticsTab />}
+            {activeTab === 'marketplace' && <MarketplaceTab />}
+          </Suspense>
+        </ErrorBoundary>
       </main>
+
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   );
 };

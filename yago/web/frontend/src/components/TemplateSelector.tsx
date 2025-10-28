@@ -41,11 +41,20 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       if (showPopularOnly) filters.popular_only = true;
 
       const response = await templateApi.getTemplates(filters);
-      setTemplates(response.templates);
-      setCategories(response.categories);
+      setTemplates(response.templates || []);
+
+      // Load categories separately
+      try {
+        const cats = await templateApi.getCategories();
+        setCategories(cats || []);
+      } catch (err) {
+        console.warn('Failed to load categories:', err);
+        setCategories([]);
+      }
     } catch (error) {
       console.error('Failed to load templates:', error);
       toast.error('Failed to load templates');
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
