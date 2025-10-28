@@ -3,7 +3,7 @@
  * Tracks Core Web Vitals for performance monitoring
  */
 
-import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB, Metric } from 'web-vitals';
+import { onCLS, onFCP, onINP, onLCP, onTTFB, Metric } from 'web-vitals';
 
 /**
  * Performance thresholds (Google's recommended values)
@@ -98,12 +98,11 @@ function sendToAnalytics(metric: Metric) {
 export function reportWebVitals() {
   // Core Web Vitals
   onCLS(sendToAnalytics);
-  onFID(sendToAnalytics);
+  onINP(sendToAnalytics); // Replaced FID with INP (new standard)
   onLCP(sendToAnalytics);
 
   // Additional metrics
   onFCP(sendToAnalytics);
-  onINP(sendToAnalytics);
   onTTFB(sendToAnalytics);
 }
 
