@@ -1,0 +1,18 @@
+# YAGO v7.1 - Frontend Development Dockerfile
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy source
+COPY . .
+
+# Expose ports
+EXPOSE 3000 5173
+
+# Start dev server
+CMD ["npm", "run", "dev", "--", "--host"]

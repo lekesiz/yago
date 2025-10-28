@@ -28,6 +28,9 @@ export const ClarificationFlow: React.FC = () => {
     draftAnswers,
     loading,
     wsConnected,
+    nextAvailable,
+    previousAvailable,
+    canFinishEarly,
     darkMode,
     startClarification,
     submitAnswer,
@@ -278,10 +281,10 @@ export const ClarificationFlow: React.FC = () => {
                   onPrevious={handlePrevious}
                   onSkip={handleSkip}
                   onFinish={handleFinishEarly}
-                  canNext={!!currentQuestion && progress ? progress.answered < progress.total : false}
-                  canPrevious={progress ? progress.answered > 0 : false}
+                  canNext={nextAvailable}
+                  canPrevious={previousAvailable}
                   canSkip={currentQuestion ? !currentQuestion.required : false}
-                  canFinish={progress ? progress.percentage >= 80 : false}
+                  canFinish={canFinishEarly}
                   loading={loading}
                 />
 

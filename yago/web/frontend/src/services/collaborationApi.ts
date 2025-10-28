@@ -5,16 +5,16 @@
 
 import axios from 'axios';
 import type {
-  AgentMessage,
   Agent,
   SharedContext,
   Conflict,
-  TaskDependency,
   SendMessageResponse,
   GetMessagesResponse,
   GetAgentsStatusResponse,
   GetConflictsResponse,
   CollaborationHealth,
+} from '../types/collaboration';
+import {
   AgentType,
   MessageType,
   MessagePriority,

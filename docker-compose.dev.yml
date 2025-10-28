@@ -1,0 +1,73 @@
+# YAGO v7.1 - Development Docker Compose
+# Simplified configuration for local development
+
+version: '3.8'
+
+services:
+  # Backend API Service (Development)
+  backend:
+    build:
+      context: ./yago/web/backend
+      dockerfile: Dockerfile
+    container_name: yago-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - DATABASE_PATH=/app/data/yago-dev.db
+      - HOST=0.0.0.0
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=debug
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+    volumes:
+      # Mount source code for hot reload
+      - ./yago/web/backend:/app
+      - backend-dev-data:/app/data
+    networks:
+      - yago-dev-network
+    command: python -m uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend Web Service (Development)
+  frontend:
+    build:
+      context: ./yago/web/frontend
+      dockerfile: Dockerfile.dev
+    container_name: yago-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "5173:5173"  # Vite dev server
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      # Mount source code for hot reload
+      - ./yago/web/frontend:/app
+      - /app/node_modules
+    networks:
+      - yago-dev-network
+    depends_on:
+      - backend
+    command: npm run dev -- --host
+
+  # Redis (Development)
+  redis:
+    image: redis:7-alpine
+    container_name: yago-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - yago-dev-network
+
+networks:
+  yago-dev-network:
+    driver: bridge
+
+volumes:
+  backend-dev-data:
+    driver: local

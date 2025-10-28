@@ -49,6 +49,7 @@ export interface AgentMessage {
   to_agent: AgentType | null; // null = broadcast
   message_type: MessageType;
   priority: MessagePriority;
+  content: string;
   data: Record<string, any>;
   requires_ack: boolean;
   timeout: number; // seconds
@@ -57,6 +58,8 @@ export interface AgentMessage {
   session_id?: string | null;
   acknowledged: boolean;
   ack_timestamp?: string | null;
+  response_to?: string | null;
+  metadata?: Record<string, any>;
 }
 
 export interface Agent {

@@ -1,0 +1,147 @@
+# YAGO v7.1 - Docker Compose Configuration
+# Multi-service orchestration for production deployment
+
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./yago/web/backend
+      dockerfile: Dockerfile
+    container_name: yago-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # API Keys (load from .env file)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+
+      # Database
+      - DATABASE_PATH=/app/data/yago.db
+
+      # Server Configuration
+      - HOST=0.0.0.0
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+
+      # CORS Configuration
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:80,http://frontend:80
+
+      # Performance
+      - WORKERS=4
+      - LOG_LEVEL=info
+    volumes:
+      # Persist database
+      - backend-data:/app/data
+
+      # Mount code for development (remove in production)
+      # - ./yago/web/backend:/app
+    networks:
+      - yago-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/costs/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend Web Service
+  frontend:
+    build:
+      context: ./yago/web/frontend
+      dockerfile: Dockerfile
+    container_name: yago-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - yago-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # Redis (for caching and rate limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: yago-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - yago-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # PostgreSQL (optional upgrade from SQLite)
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: yago-postgres
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_USER=yago
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #     - POSTGRES_DB=yago
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - yago-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U yago"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # Nginx Reverse Proxy (production)
+  nginx:
+    image: nginx:alpine
+    container_name: yago-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - yago-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  yago-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+    driver: local
+  redis-data:
+    driver: local
+  # postgres-data:
+  #   driver: local

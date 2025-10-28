@@ -380,7 +380,7 @@ async def get_clarification(session_id: str):
         total=total,
         percentage=(answered / total * 100) if total > 0 else 0,
         category_progress=category_progress,
-        estimated_time_remaining=max(0, (total - answered) * 0.5)
+        estimated_time_remaining=int(max(0, (total - answered) * 0.5))
     )
 
     return ClarificationResponse(
