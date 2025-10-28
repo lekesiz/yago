@@ -44,8 +44,12 @@ env/
 
 # Logs
 *.log
-logs/
+logs/*.log
 yago.log
+# Keep logs directory structure
+!logs/
+!logs/README.md
+!logs/.gitkeep
 
 # Output
 output/
