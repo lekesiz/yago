@@ -310,5 +310,187 @@ async def get_cost_summary(project_id: str):
 async def benchmarks_health():
     return {"status": "healthy", "service": "benchmarks"}
 
+# AI Models endpoints
+models_db = [
+    {
+        "id": "gpt-4-turbo",
+        "name": "GPT-4 Turbo",
+        "provider": "openai",
+        "description": "Most capable GPT-4 model, optimized for speed and cost",
+        "context_window": 128000,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.01,
+        "cost_per_1k_output": 0.03,
+        "speed_score": 8,
+        "quality_score": 10,
+        "capabilities": ["chat", "code_generation", "analysis", "reasoning"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "gpt-4",
+        "name": "GPT-4",
+        "provider": "openai",
+        "description": "Original GPT-4 model with exceptional capabilities",
+        "context_window": 8192,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.03,
+        "cost_per_1k_output": 0.06,
+        "speed_score": 6,
+        "quality_score": 10,
+        "capabilities": ["chat", "code_generation", "analysis", "reasoning", "creative_writing"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "gpt-3.5-turbo",
+        "name": "GPT-3.5 Turbo",
+        "provider": "openai",
+        "description": "Fast and cost-effective model for most tasks",
+        "context_window": 16385,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.0005,
+        "cost_per_1k_output": 0.0015,
+        "speed_score": 10,
+        "quality_score": 7,
+        "capabilities": ["chat", "code_generation", "analysis"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "claude-3-opus",
+        "name": "Claude 3 Opus",
+        "provider": "anthropic",
+        "description": "Most capable Claude model for complex tasks",
+        "context_window": 200000,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.015,
+        "cost_per_1k_output": 0.075,
+        "speed_score": 7,
+        "quality_score": 10,
+        "capabilities": ["chat", "code_generation", "analysis", "reasoning", "long_context"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "claude-3-sonnet",
+        "name": "Claude 3 Sonnet",
+        "provider": "anthropic",
+        "description": "Balanced performance and cost",
+        "context_window": 200000,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.003,
+        "cost_per_1k_output": 0.015,
+        "speed_score": 9,
+        "quality_score": 9,
+        "capabilities": ["chat", "code_generation", "analysis", "long_context"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "claude-3-haiku",
+        "name": "Claude 3 Haiku",
+        "provider": "anthropic",
+        "description": "Fastest Claude model for simple tasks",
+        "context_window": 200000,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.00025,
+        "cost_per_1k_output": 0.00125,
+        "speed_score": 10,
+        "quality_score": 7,
+        "capabilities": ["chat", "analysis"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "gemini-pro",
+        "name": "Gemini Pro",
+        "provider": "google",
+        "description": "Google's most capable model",
+        "context_window": 32768,
+        "max_tokens": 8192,
+        "cost_per_1k_input": 0.00025,
+        "cost_per_1k_output": 0.0005,
+        "speed_score": 9,
+        "quality_score": 8,
+        "capabilities": ["chat", "code_generation", "analysis", "multimodal"],
+        "status": "available",
+        "enabled": True
+    }
+]
+
+@app.get("/api/v1/models/list")
+async def get_models(provider: Optional[str] = None, capability: Optional[str] = None):
+    """Get list of available AI models"""
+    filtered = models_db
+
+    if provider:
+        filtered = [m for m in filtered if m["provider"] == provider]
+    if capability:
+        filtered = [m for m in filtered if capability in m["capabilities"]]
+
+    return {"models": filtered, "total": len(filtered)}
+
+@app.get("/api/v1/models/{model_id}")
+async def get_model(model_id: str):
+    """Get specific model details"""
+    model = next((m for m in models_db if m["id"] == model_id), None)
+    if model:
+        return model
+    return {"error": "Model not found"}
+
+@app.post("/api/v1/models/{model_id}/test")
+async def test_model(model_id: str, request: Dict):
+    """Test a model with a prompt"""
+    model = next((m for m in models_db if m["id"] == model_id), None)
+    if not model:
+        return {"error": "Model not found"}
+
+    prompt = request.get("prompt", "Hello, world!")
+
+    # Simulate model response
+    return {
+        "model_id": model_id,
+        "model_name": model["name"],
+        "prompt": prompt,
+        "response": f"This is a simulated response from {model['name']}. In production, this would call the actual API.",
+        "tokens_used": len(prompt.split()) * 2,
+        "cost": len(prompt.split()) * model["cost_per_1k_input"] / 1000,
+        "latency_ms": 100 + (10 - model["speed_score"]) * 50
+    }
+
+@app.post("/api/v1/models/compare")
+async def compare_models(request: Dict):
+    """Compare multiple models"""
+    model_ids = request.get("model_ids", [])
+    comparison = []
+
+    for model_id in model_ids:
+        model = next((m for m in models_db if m["id"] == model_id), None)
+        if model:
+            comparison.append(model)
+
+    return {
+        "models": comparison,
+        "total": len(comparison),
+        "comparison_metrics": {
+            "cheapest": min(comparison, key=lambda x: x["cost_per_1k_input"])["id"] if comparison else None,
+            "fastest": max(comparison, key=lambda x: x["speed_score"])["id"] if comparison else None,
+            "best_quality": max(comparison, key=lambda x: x["quality_score"])["id"] if comparison else None
+        }
+    }
+
+@app.get("/api/v1/models/providers")
+async def get_providers():
+    """Get list of AI providers"""
+    providers = {}
+    for model in models_db:
+        provider = model["provider"]
+        if provider not in providers:
+            providers[provider] = {"name": provider, "models": []}
+        providers[provider]["models"].append(model["id"])
+
+    return {"providers": list(providers.values())}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

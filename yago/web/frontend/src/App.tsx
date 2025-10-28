@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ClarificationFlow } from './components/ClarificationFlow';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { AIModelsTab } from './components/AIModelsTab';
 import './i18n/config';
 import './index.css';
 
@@ -98,7 +99,7 @@ const App: React.FC = () => {
           <Suspense fallback={<div className="text-white text-center">Loading...</div>}>
             {activeTab === 'overview' && <OverviewTab />}
             {activeTab === 'create' && <ClarificationFlow />}
-            {activeTab === 'models' && <ModelsTab />}
+            {activeTab === 'models' && <AIModelsTab />}
             {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'marketplace' && <MarketplaceTab />}
           </Suspense>
