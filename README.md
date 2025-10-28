@@ -158,7 +158,47 @@ result = await mfa_manager.enable_mfa(user_id, MFAMethod.TOTP)
 
 ## 🚀 Quick Start
 
-### Installation
+### Local Development (Recommended for Testing)
+
+**One-command startup script for local testing:**
+
+```bash
+# Clone repository
+git clone https://github.com/lekesiz/yago.git
+cd yago
+
+# Set up environment variables (create .env file)
+cat > .env << 'EOF'
+OPENAI_API_KEY=your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GOOGLE_API_KEY=your-google-key
+DATABASE_URL=sqlite:///./yago.db
+EOF
+
+# Start both backend and frontend with one command
+./scripts/start-local.sh
+```
+
+**What this does:**
+- ✅ Installs Python dependencies (auto-detects Python 3.11+)
+- ✅ Installs Node.js dependencies (auto-detects Node 18+)
+- ✅ Starts backend on `http://localhost:8000`
+- ✅ Starts frontend on `http://localhost:3000`
+- ✅ Creates logs in `logs/` directory
+- ✅ Auto-creates SQLite database
+
+**Access Points:**
+- **Dashboard**: http://localhost:3000 (Modern UI with 4 tabs)
+- **API Docs**: http://localhost:8000/docs (Swagger UI - 73 endpoints)
+- **Health Check**: http://localhost:8000/health
+
+**Stop Services:**
+```bash
+# Kill backend and frontend
+lsof -ti:8000,3000 | xargs kill
+```
+
+### Manual Installation
 
 ```bash
 # Clone repository
@@ -186,7 +226,7 @@ uvicorn web.backend.main:app --reload --port 8000
 ```bash
 cd yago/web/frontend
 npm install
-npm start
+npm run dev  # Vite dev server
 ```
 
 ### Docker Deployment
