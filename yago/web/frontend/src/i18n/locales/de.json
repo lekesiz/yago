@@ -1,0 +1,119 @@
+{
+  "common": {
+    "welcome": "Willkommen bei YAGO",
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "finish": "Beenden",
+    "submit": "Absenden",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "refresh": "Aktualisieren",
+    "export": "Exportieren",
+    "import": "Importieren"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "dashboards": "Dashboards",
+    "cost": "Kostenverfolgung",
+    "collaboration": "Zusammenarbeit",
+    "benchmark": "Benchmark",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "logout": "Abmelden"
+  },
+  "cost": {
+    "title": "Kostenverfolgungs-Dashboard",
+    "totalCost": "Gesamtkosten",
+    "budget": "Budget",
+    "remaining": "Verbleibend",
+    "spent": "Ausgegeben",
+    "projected": "Prognostizierte Kosten",
+    "optimization": "Kostenoptimierung",
+    "suggestions": "Vorschläge",
+    "breakdown": "Kostenaufschlüsselung",
+    "byAgent": "Nach Agent",
+    "byPhase": "Nach Phase",
+    "byModel": "Nach Modell",
+    "alert": {
+      "budgetExceeded": "Budget überschritten!",
+      "approaching": "Budgetgrenze erreicht",
+      "normal": "Im Budget"
+    }
+  },
+  "collaboration": {
+    "title": "Agenten-Zusammenarbeit",
+    "agents": "Agenten",
+    "messages": "Nachrichten",
+    "context": "Gemeinsamer Kontext",
+    "conflicts": "Konflikte",
+    "status": {
+      "idle": "Inaktiv",
+      "busy": "Beschäftigt",
+      "waiting": "Wartend",
+      "error": "Fehler"
+    },
+    "messageTypes": {
+      "codeReady": "Code bereit",
+      "testResults": "Testergebnisse",
+      "reviewNeeded": "Überprüfung erforderlich",
+      "issueFound": "Problem gefunden"
+    }
+  },
+  "benchmark": {
+    "title": "Leistungsbenchmark",
+    "run": "Benchmark starten",
+    "results": "Ergebnisse",
+    "trends": "Leistungstrends",
+    "comparison": "Vergleich",
+    "metrics": {
+      "latency": "Latenz",
+      "throughput": "Durchsatz",
+      "accuracy": "Genauigkeit",
+      "cost": "Kosten pro Anfrage"
+    }
+  },
+  "clarification": {
+    "title": "Projektklärung",
+    "question": "Frage",
+    "answer": "Antwort",
+    "progress": "Fortschritt",
+    "questionsRemaining": "Verbleibende Fragen",
+    "estimatedTime": "Geschätzte Zeit",
+    "skip": "Überspringen",
+    "complete": "Abschließen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "theme": "Design",
+    "notifications": "Benachrichtigungen",
+    "apiKeys": "API-Schlüssel",
+    "preferences": "Einstellungen"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "network": "Netzwerkfehler",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Verboten",
+    "serverError": "Serverfehler"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "email": "Ungültige E-Mail-Adresse",
+    "minLength": "Mindestlänge beträgt {{min}} Zeichen",
+    "maxLength": "Maximallänge beträgt {{max}} Zeichen",
+    "number": "Muss eine Zahl sein",
+    "positive": "Muss positiv sein"
+  }
+}
