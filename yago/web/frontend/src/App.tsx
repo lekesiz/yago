@@ -248,61 +248,9 @@ const OverviewTab: React.FC = () => {
   );
 };
 
-// Models Tab (placeholder)
-const ModelsTab: React.FC = () => {
-  return (
-    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center">
-      <div className="text-6xl mb-4">🤖</div>
-      <h2 className="text-2xl font-bold text-white mb-2">AI Models</h2>
-      <p className="text-gray-400 mb-6">Coming soon: Model selection interface</p>
-      <a
-        href="http://localhost:8000/docs#/Models"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-      >
-        View Models API
-      </a>
-    </div>
-  );
-};
-
-// Analytics Tab (placeholder)
-const AnalyticsTab: React.FC = () => {
-  return (
-    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center">
-      <div className="text-6xl mb-4">📈</div>
-      <h2 className="text-2xl font-bold text-white mb-2">Analytics Dashboard</h2>
-      <p className="text-gray-400 mb-6">Coming soon: Real-time analytics and metrics</p>
-      <a
-        href="http://localhost:8000/docs#/Analytics"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
-      >
-        View Analytics API
-      </a>
-    </div>
-  );
-};
-
-// Marketplace Tab (placeholder)
-const MarketplaceTab: React.FC = () => {
-  return (
-    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 border border-white/10 text-center">
-      <div className="text-6xl mb-4">🛒</div>
-      <h2 className="text-2xl font-bold text-white mb-2">Marketplace</h2>
-      <p className="text-gray-400 mb-6">Coming soon: Browse plugins and integrations</p>
-      <a
-        href="http://localhost:8000/docs#/Marketplace"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition"
-      >
-        View Marketplace API
-      </a>
-    </div>
-  );
-};
+// All tab components are now imported from separate files:
+// - AIModelsTab from './components/AIModelsTab'
+// - AnalyticsTab from './components/AnalyticsTab'
+// - MarketplaceTab from './components/MarketplaceTab'
 
 export default App;
