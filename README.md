@@ -199,25 +199,46 @@ docker-compose -f deployment/docker/docker-compose.prod.yml build
 docker-compose -f deployment/docker/docker-compose.prod.yml up -d
 ```
 
-### Kubernetes Deployment
+### Production Deployment
+
+**Option 1: Google Cloud Run + Firestore (Recommended)**
 
 ```bash
-# Deploy with kubectl
-kubectl apply -f deployment/kubernetes/manifests/
-
-# Or use Helm
-helm install yago deployment/kubernetes/helm/yago/
+# One-command deployment
+export GCP_PROJECT_ID="your-project-id"
+./deployment/deploy-gcp.sh
 ```
+
+**Features**:
+- ✅ Serverless architecture (zero infrastructure management)
+- ✅ Auto-scaling (0 to 100 instances)
+- ✅ Production-ready (~$60/month)
+- ✅ ~50 minutes setup time
+
+**Option 2: Vercel + Railway + Neon (Quick Start)**
+
+```bash
+# Quick MVP deployment
+./deployment/deploy-vercel-railway.sh
+```
+
+**Features**:
+- ✅ Free tier available ($0-5/month)
+- ✅ Fast deployment (~20 minutes)
+- ✅ Ideal for testing and small-scale use
+
+**See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions**
 
 ---
 
 ## 📚 Documentation
 
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions for GCP and Vercel
+- **[Deployment Comparison](DEPLOYMENT_COMPARISON.md)** - Detailed comparison of deployment options
+- **[Release Notes v8.0](RELEASE_v8.0.md)** - Complete v8.0 release notes
+- **[Roadmap](ROADMAP.md)** - Product roadmap and version history
 - **[AI Model Selection](docs/AI_MODEL_SELECTION.md)** - Model management and selection
 - **[Auto-Healing](docs/AUTO_HEALING.md)** - Error recovery and health monitoring
-- **[Roadmap](ROADMAP.md)** - Product roadmap and version history
-- **[Release Notes v8.0](RELEASE_v8.0.md)** - Complete v8.0 release notes
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Kubernetes and cloud deployment
 
 ---
 

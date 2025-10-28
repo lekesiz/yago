@@ -1,0 +1,29 @@
+# Railway.app configuration for YAGO v8.0 Backend
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "deployment/Dockerfile.backend"
+
+[deploy]
+startCommand = "uvicorn backend.main:app --host 0.0.0.0 --port $PORT --workers 2"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+[[services]]
+name = "yago-backend"
+
+[services.healthcheck]
+path = "/health"
+interval = 30
+timeout = 10
+
+[services.resources]
+memory = 2048
+cpu = 2
+
+[services.autoscaling]
+enabled = true
+minReplicas = 0
+maxReplicas = 3
+targetCPU = 70
+targetMemory = 80
