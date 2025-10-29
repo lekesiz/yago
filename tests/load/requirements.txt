@@ -1,0 +1,27 @@
+# YAGO v8.1 Load Testing Requirements
+# Install with: pip install -r requirements.txt
+
+# Core load testing framework
+locust==2.20.0
+
+# Data generation and manipulation
+faker==24.0.0
+
+# HTTP client (locust dependency, but explicit for clarity)
+requests==2.31.0
+
+# Data analysis and reporting
+pandas==2.2.1
+numpy==1.26.4
+
+# Plotting and visualization (for custom reports)
+matplotlib==3.8.3
+seaborn==0.13.2
+
+# Additional utilities
+python-dateutil==2.9.0
+pytz==2024.1
+
+# Optional: For advanced monitoring
+psutil==5.9.8  # System resource monitoring
+pympler==1.0.1  # Memory profiling

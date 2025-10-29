@@ -811,9 +811,172 @@ async def check_providers_status():
     }
 
 # Analytics endpoints
+@app.get("/api/v1/analytics")
+async def get_comprehensive_analytics(range: str = "30d", db: Session = Depends(get_db)):
+    """
+    Get comprehensive analytics with REAL database aggregation
+
+    Supports query parameters:
+    - range: 7d, 30d, all (default: 30d)
+    """
+    from sqlalchemy import func, desc
+    from datetime import timedelta
+
+    # Calculate date range
+    now = datetime.utcnow()
+    if range == "7d":
+        start_date = now - timedelta(days=7)
+    elif range == "30d":
+        start_date = now - timedelta(days=30)
+    else:  # "all"
+        start_date = datetime(2020, 1, 1)  # Beginning of time
+
+    # Query projects from database
+    projects_query = db.query(models.Project).filter(
+        models.Project.created_at >= start_date
+    )
+
+    all_projects = projects_query.all()
+
+    # Overview stats
+    total_projects = len(all_projects)
+    completed = len([p for p in all_projects if p.status == "completed"])
+    failed = len([p for p in all_projects if p.status == "failed"])
+    in_progress = len([p for p in all_projects if p.status in ["in_progress", "executing"]])
+
+    total_cost = sum(p.actual_cost or 0 for p in all_projects)
+    total_files = sum(p.files_generated or 0 for p in all_projects)
+    total_lines = sum(p.lines_of_code or 0 for p in all_projects)
+
+    # Calculate average duration for completed projects
+    completed_projects = [p for p in all_projects if p.status == "completed" and p.started_at and p.completed_at]
+    if completed_projects:
+        durations = [(p.completed_at - p.started_at).total_seconds() / 60 for p in completed_projects]
+        avg_duration = sum(durations) / len(durations)
+    else:
+        avg_duration = 0
+
+    # AI usage by model (from projects)
+    model_usage = {}
+    for project in all_projects:
+        model = project.primary_model or "unknown"
+        if model not in model_usage:
+            model_usage[model] = {
+                "model": model,
+                "count": 0,
+                "total_cost": 0,
+                "total_lines": 0
+            }
+        model_usage[model]["count"] += 1
+        model_usage[model]["total_cost"] += project.actual_cost or 0
+        model_usage[model]["total_lines"] += project.lines_of_code or 0
+
+    # AI usage by strategy
+    strategy_usage = {}
+    for project in all_projects:
+        strategy = project.strategy or "balanced"
+        if strategy not in strategy_usage:
+            strategy_usage[strategy] = {
+                "strategy": strategy,
+                "count": 0,
+                "success_rate": 0
+            }
+        strategy_usage[strategy]["count"] += 1
+        if project.status == "completed":
+            strategy_usage[strategy]["success_rate"] += 1
+
+    # Calculate success rates for strategies
+    for strategy in strategy_usage.values():
+        if strategy["count"] > 0:
+            strategy["success_rate"] = round((strategy["success_rate"] / strategy["count"]) * 100, 1)
+
+    # Timeline data (last 30 days of activity)
+    timeline_days = 30 if range != "7d" else 7
+    timeline = []
+    for i in range(timeline_days):
+        day_start = now - timedelta(days=timeline_days - i - 1)
+        day_end = day_start + timedelta(days=1)
+
+        day_projects = [p for p in all_projects if day_start <= p.created_at < day_end]
+
+        timeline.append({
+            "date": day_start.strftime("%Y-%m-%d"),
+            "projects_created": len(day_projects),
+            "projects_completed": len([p for p in day_projects if p.status == "completed"]),
+            "cost": sum(p.actual_cost or 0 for p in day_projects),
+            "lines_of_code": sum(p.lines_of_code or 0 for p in day_projects)
+        })
+
+    # Top 5 projects by lines of code
+    top_projects = sorted(all_projects, key=lambda p: p.lines_of_code or 0, reverse=True)[:5]
+    top_projects_data = [{
+        "id": p.id,
+        "name": p.name,
+        "lines_of_code": p.lines_of_code or 0,
+        "files_generated": p.files_generated or 0,
+        "status": p.status,
+        "cost": p.actual_cost or 0
+    } for p in top_projects]
+
+    # Query AI provider usage from database
+    ai_usage_query = db.query(models.AIProviderUsage).filter(
+        models.AIProviderUsage.created_at >= start_date
+    )
+    ai_usage_records = ai_usage_query.all()
+
+    # Provider stats
+    provider_stats = {}
+    for record in ai_usage_records:
+        provider = record.provider
+        if provider not in provider_stats:
+            provider_stats[provider] = {
+                "provider": provider,
+                "requests": 0,
+                "total_tokens": 0,
+                "total_cost": 0,
+                "avg_latency": 0,
+                "success_rate": 0
+            }
+
+        provider_stats[provider]["requests"] += 1
+        provider_stats[provider]["total_tokens"] += record.total_tokens or 0
+        provider_stats[provider]["total_cost"] += record.cost or 0
+        if record.latency_ms:
+            provider_stats[provider]["avg_latency"] += record.latency_ms
+        if record.success:
+            provider_stats[provider]["success_rate"] += 1
+
+    # Calculate averages
+    for provider in provider_stats.values():
+        if provider["requests"] > 0:
+            provider["avg_latency"] = round(provider["avg_latency"] / provider["requests"])
+            provider["success_rate"] = round((provider["success_rate"] / provider["requests"]) * 100, 1)
+
+    return {
+        "overview": {
+            "total_projects": total_projects,
+            "completed": completed,
+            "failed": failed,
+            "in_progress": in_progress,
+            "total_cost": round(total_cost, 2),
+            "total_files": total_files,
+            "total_lines": total_lines,
+            "avg_duration_minutes": round(avg_duration, 1)
+        },
+        "ai_usage": {
+            "by_model": list(model_usage.values()),
+            "by_strategy": list(strategy_usage.values()),
+            "by_provider": list(provider_stats.values())
+        },
+        "timeline": timeline,
+        "top_projects": top_projects_data,
+        "range": range,
+        "timestamp": now.isoformat()
+    }
+
 @app.get("/api/v1/analytics/metrics")
 async def get_analytics_metrics():
-    """Get analytics metrics"""
+    """Get analytics metrics (legacy endpoint - redirects to new endpoint)"""
     import random
     return {
         "total_requests": random.randint(1000, 5000),

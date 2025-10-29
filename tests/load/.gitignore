@@ -1,0 +1,23 @@
+# Locust Load Test Results
+results/
+*.log
+*.csv
+*.html
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# Reports
+reports/
+screenshots/
+*.tar.gz
+
+# OS
+.DS_Store
+Thumbs.db
