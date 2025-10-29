@@ -182,7 +182,7 @@ async def templates_health():
 # Clarification endpoints
 sessions_db: Dict[str, Dict] = {}
 
-@app.post("/api/v1/clarification/start")
+@app.post("/api/v1/clarifications/start")
 async def start_clarification(request: Dict):
     """Start a new clarification session"""
     session_id = str(uuid.uuid4())
@@ -207,7 +207,7 @@ async def start_clarification(request: Dict):
         }
     }
 
-@app.get("/api/v1/clarification/{session_id}")
+@app.get("/api/v1/clarifications/{session_id}")
 async def get_clarification_session(session_id: str):
     """Get clarification session details"""
     session = sessions_db.get(session_id)
@@ -215,7 +215,7 @@ async def get_clarification_session(session_id: str):
         return session
     return {"error": "Session not found"}
 
-@app.post("/api/v1/clarification/{session_id}/answer")
+@app.post("/api/v1/clarifications/{session_id}/answer")
 async def submit_answer(session_id: str, request: Dict):
     """Submit an answer to clarification question"""
     session = sessions_db.get(session_id)
@@ -247,7 +247,7 @@ async def submit_answer(session_id: str, request: Dict):
         }
     }
 
-@app.get("/api/v1/clarification/{session_id}/progress")
+@app.get("/api/v1/clarifications/{session_id}/progress")
 async def get_progress(session_id: str):
     """Get session progress"""
     session = sessions_db.get(session_id)
@@ -264,7 +264,65 @@ async def get_progress(session_id: str):
         "percentage": (answered / total_questions) * 100
     }
 
-@app.websocket("/api/v1/clarification/ws/{session_id}")
+@app.post("/api/v1/clarifications/{session_id}/complete")
+async def complete_clarification(session_id: str):
+    """Complete clarification session"""
+    session = sessions_db.get(session_id)
+    if not session:
+        return {"error": "Session not found"}
+
+    session["status"] = "completed"
+    session["completed_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "status": "completed",
+        "message": "Clarification completed successfully",
+        "brief": {
+            "session_id": session_id,
+            "project_idea": session["project_idea"],
+            "answers": session["answers"],
+            "completed_at": session["completed_at"]
+        }
+    }
+
+@app.post("/api/v1/clarifications/{session_id}/navigate/{direction}")
+async def navigate_clarification(session_id: str, direction: str):
+    """Navigate to next/previous question"""
+    session = sessions_db.get(session_id)
+    if not session:
+        return {"error": "Session not found"}
+
+    if direction not in ["next", "previous"]:
+        return {"error": "Invalid direction"}
+
+    current = session["current_question"]
+    if direction == "next":
+        session["current_question"] = min(current + 1, 4)  # Max 5 questions (0-4)
+    elif direction == "previous":
+        session["current_question"] = max(current - 1, 0)
+
+    return {
+        "session_id": session_id,
+        "current_question": session["current_question"],
+        "status": "ok"
+    }
+
+@app.put("/api/v1/clarifications/{session_id}/draft")
+async def update_draft(session_id: str, request: Dict):
+    """Update draft answers (auto-save)"""
+    session = sessions_db.get(session_id)
+    if not session:
+        return {"error": "Session not found"}
+
+    session["draft_answers"] = request.get("answers", {})
+    session["updated_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "status": "saved",
+        "timestamp": session["updated_at"]
+    }
+
+@app.websocket("/api/v1/clarifications/ws/{session_id}")
 async def websocket_clarification(websocket: WebSocket, session_id: str):
     """WebSocket endpoint for real-time clarification"""
     await websocket.accept()
