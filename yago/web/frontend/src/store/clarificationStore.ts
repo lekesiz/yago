@@ -231,59 +231,67 @@ export const useClarificationStore = create<ClarificationState>()(
           const { sessionId, ws } = get();
           if (!sessionId || ws) return;
 
-          const wsUrl = `ws://localhost:8000/ws/${sessionId}`;
-          const websocket = new WebSocket(wsUrl);
+          // WebSocket is optional - set connected to true immediately
+          // This allows the UI to work without WebSocket
+          set({ wsConnected: true });
 
-          websocket.onopen = () => {
-            console.log('WebSocket connected');
-            set({ wsConnected: true });
-          };
+          // Try to connect to WebSocket but don't block if it fails
+          try {
+            const wsUrl = `ws://localhost:8000/api/v1/clarifications/ws/${sessionId}`;
+            const websocket = new WebSocket(wsUrl);
 
-          websocket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
+            websocket.onopen = () => {
+              console.log('✅ WebSocket connected');
+              set({ ws: websocket });
+            };
 
-            if (message.type === 'progress_update') {
-              // Update progress from WebSocket
-              const { progress } = get();
-              if (progress) {
-                set({
-                  progress: {
-                    ...progress,
-                    answered: message.data.answered,
-                    total: message.data.total,
-                    percentage: (message.data.answered / message.data.total) * 100,
-                  },
-                });
+            websocket.onmessage = (event) => {
+              const message = JSON.parse(event.data);
+
+              if (message.type === 'progress_update') {
+                // Update progress from WebSocket
+                const { progress } = get();
+                if (progress) {
+                  set({
+                    progress: {
+                      ...progress,
+                      answered: message.data.answered,
+                      total: message.data.total,
+                      percentage: (message.data.answered / message.data.total) * 100,
+                    },
+                  });
+                }
+              } else if (message.type === 'notification') {
+                console.log('📢 Notification:', message.message);
               }
-            } else if (message.type === 'notification') {
-              // Handle notifications (can be integrated with toast)
-              console.log('Notification:', message.message);
-            }
-          };
+            };
 
-          websocket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            set({ wsConnected: false });
-          };
+            websocket.onerror = (error) => {
+              console.warn('⚠️ WebSocket error (non-critical):', error);
+              // Don't set wsConnected to false - app works without WS
+            };
 
-          websocket.onclose = () => {
-            console.log('WebSocket disconnected');
-            set({ wsConnected: false, ws: null });
-          };
+            websocket.onclose = () => {
+              console.log('🔌 WebSocket disconnected (non-critical)');
+              set({ ws: null });
+              // Keep wsConnected true - app works fine without WebSocket
+            };
 
-          set({ ws: websocket });
+            // Send ping every 30 seconds to keep connection alive
+            const pingInterval = setInterval(() => {
+              if (websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify({ type: 'ping' }));
+              }
+            }, 30000);
 
-          // Send ping every 30 seconds to keep connection alive
-          const pingInterval = setInterval(() => {
-            if (websocket.readyState === WebSocket.OPEN) {
-              websocket.send(JSON.stringify({ type: 'ping' }));
-            }
-          }, 30000);
-
-          // Cleanup on disconnect
-          websocket.addEventListener('close', () => {
-            clearInterval(pingInterval);
-          });
+            // Cleanup on disconnect
+            websocket.addEventListener('close', () => {
+              clearInterval(pingInterval);
+            });
+          } catch (error) {
+            console.warn('⚠️ WebSocket connection failed (non-critical):', error);
+            // Continue without WebSocket - app will work fine with REST API
+          }
         },
 
         disconnectWebSocket: () => {

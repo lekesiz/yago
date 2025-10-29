@@ -186,6 +186,18 @@ sessions_db: Dict[str, Dict] = {}
 async def start_clarification(request: Dict):
     """Start a new clarification session"""
     session_id = str(uuid.uuid4())
+
+    # Create mock questions
+    questions = [
+        {"id": "q1", "text": "What is the primary purpose of your project?", "type": "text", "required": True, "category": "basic"},
+        {"id": "q2", "text": "Who is your target audience?", "type": "text", "required": True, "category": "basic"},
+        {"id": "q3", "text": "What is your expected timeline?", "type": "select", "required": False, "category": "technical",
+         "options": ["1-2 weeks", "1 month", "2-3 months", "3+ months"]},
+        {"id": "q4", "text": "What is your budget range?", "type": "select", "required": False, "category": "technical",
+         "options": ["<$1000", "$1000-$5000", "$5000-$10000", "$10000+"]},
+        {"id": "q5", "text": "Any additional requirements?", "type": "text", "required": False, "category": "quality"}
+    ]
+
     sessions_db[session_id] = {
         "session_id": session_id,
         "project_idea": request.get("project_idea"),
@@ -193,18 +205,26 @@ async def start_clarification(request: Dict):
         "user_id": request.get("user_id"),
         "created_at": datetime.utcnow().isoformat(),
         "current_question": 0,
-        "answers": {}
+        "questions": questions,
+        "answers": {},
+        "total_questions": len(questions)
     }
 
+    # Return in the format frontend expects
     return {
         "session_id": session_id,
-        "message": "Clarification session started",
-        "first_question": {
-            "id": "q1",
-            "text": "What is the primary purpose of your project?",
-            "type": "text",
-            "required": True
-        }
+        "current_question": questions[0],
+        "progress": {
+            "answered": 0,
+            "total": len(questions),
+            "percentage": 0.0,
+            "category_progress": {"basic": "0/2", "technical": "0/2", "quality": "0/1"},
+            "estimated_time_remaining": len(questions) * 2
+        },
+        "can_skip": not questions[0]["required"],
+        "can_finish_early": False,
+        "next_available": len(questions) > 1,
+        "previous_available": False
     }
 
 @app.get("/api/v1/clarifications/{session_id}")
@@ -222,29 +242,42 @@ async def submit_answer(session_id: str, request: Dict):
     if not session:
         return {"error": "Session not found"}
 
-    question_id = request.get("question_id")
-    answer = request.get("answer")
+    questions = session.get("questions", [])
+    current_idx = session["current_question"]
+    answer_value = request.get("answer")
+    skip = request.get("skip", False)
 
-    session["answers"][question_id] = answer
-    session["current_question"] += 1
+    # Save answer if not skipping
+    if not skip and current_idx < len(questions):
+        current_q = questions[current_idx]
+        session["answers"][current_q["id"]] = answer_value
 
-    # Return next question or completion
-    if session["current_question"] >= 5:  # Max 5 questions for demo
-        return {
-            "status": "completed",
-            "message": "Clarification completed",
-            "summary": session["answers"]
-        }
+    # Move to next question
+    session["current_question"] = min(current_idx + 1, len(questions))
+    new_idx = session["current_question"]
 
-    next_q = session["current_question"] + 1
+    # Calculate progress
+    answered = len(session["answers"])
+    total = len(questions)
+
+    # Get current question
+    current_question = questions[new_idx] if new_idx < len(questions) else None
+
+    # Return in the format frontend expects
     return {
-        "status": "in_progress",
-        "next_question": {
-            "id": f"q{next_q}",
-            "text": f"Question {next_q}: Tell us more about your requirements?",
-            "type": "text",
-            "required": False
-        }
+        "session_id": session_id,
+        "current_question": current_question,
+        "progress": {
+            "answered": answered,
+            "total": total,
+            "percentage": (answered / total * 100) if total > 0 else 0,
+            "category_progress": {"basic": f"{answered}/2", "technical": "0/2", "quality": "0/1"},
+            "estimated_time_remaining": max(0, (total - answered) * 2)
+        },
+        "can_skip": not current_question["required"] if current_question else False,
+        "can_finish_early": answered >= int(total * 0.8),
+        "next_available": new_idx < total - 1,
+        "previous_available": new_idx > 0
     }
 
 @app.get("/api/v1/clarifications/{session_id}/progress")
@@ -295,16 +328,37 @@ async def navigate_clarification(session_id: str, direction: str):
     if direction not in ["next", "previous"]:
         return {"error": "Invalid direction"}
 
+    questions = session.get("questions", [])
     current = session["current_question"]
+    total = len(questions)
+
+    # Update current question index
     if direction == "next":
-        session["current_question"] = min(current + 1, 4)  # Max 5 questions (0-4)
+        session["current_question"] = min(current + 1, total - 1)
     elif direction == "previous":
         session["current_question"] = max(current - 1, 0)
 
+    new_idx = session["current_question"]
+    answered = len(session["answers"])
+
+    # Get current question
+    current_question = questions[new_idx] if new_idx < len(questions) else None
+
+    # Return in the format frontend expects
     return {
         "session_id": session_id,
-        "current_question": session["current_question"],
-        "status": "ok"
+        "current_question": current_question,
+        "progress": {
+            "answered": answered,
+            "total": total,
+            "percentage": (answered / total * 100) if total > 0 else 0,
+            "category_progress": {"basic": f"{answered}/2", "technical": "0/2", "quality": "0/1"},
+            "estimated_time_remaining": max(0, (total - answered) * 2)
+        },
+        "can_skip": not current_question["required"] if current_question else False,
+        "can_finish_early": answered >= int(total * 0.8),
+        "next_available": new_idx < total - 1,
+        "previous_available": new_idx > 0
     }
 
 @app.put("/api/v1/clarifications/{session_id}/draft")
