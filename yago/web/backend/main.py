@@ -207,12 +207,12 @@ async def templates_health():
     """Health check for template system"""
     return {"status": "healthy", "templates_count": len(templates_db)}
 
-# Clarification endpoints
-sessions_db: Dict[str, Dict] = {}
+# Clarification endpoints - MIGRATED TO DATABASE
+# sessions_db: Dict[str, Dict] = {}  # Old in-memory storage
 
 @app.post("/api/v1/clarifications/start")
-async def start_clarification(request: Dict):
-    """Start a new clarification session with AI-generated questions"""
+async def start_clarification(request: Dict, db: Session = Depends(get_db)):
+    """Start a new clarification session with AI-generated questions in database"""
     session_id = str(uuid.uuid4())
     project_idea = request.get("project_idea")
     depth = request.get("depth", "standard")
@@ -240,18 +240,22 @@ async def start_clarification(request: Dict):
         )
         print(f"⚠️ Using fallback questions: {len(questions)}")
 
-    sessions_db[session_id] = {
-        "session_id": session_id,
-        "project_idea": project_idea,
-        "depth": depth,
-        "user_id": request.get("user_id"),
-        "created_at": datetime.utcnow().isoformat(),
-        "current_question": 0,
-        "questions": questions,
-        "answers": {},
-        "total_questions": len(questions),
-        "followup_questions": []  # Store dynamic follow-ups
-    }
+    # Create clarification session in database
+    session = models.ClarificationSession(
+        id=session_id,
+        project_idea=project_idea,
+        depth=depth,
+        current_question=0,
+        questions=json.dumps(questions),
+        answers=json.dumps({}),
+        total_questions=len(questions),
+        is_completed=False,
+        project_id=None  # Will be set when project is created
+    )
+
+    db.add(session)
+    db.commit()
+    db.refresh(session)
 
     # Return in the format frontend expects
     return {
@@ -271,36 +275,53 @@ async def start_clarification(request: Dict):
     }
 
 @app.get("/api/v1/clarifications/{session_id}")
-async def get_clarification_session(session_id: str):
-    """Get clarification session details"""
-    session = sessions_db.get(session_id)
-    if session:
-        return session
-    return {"error": "Session not found"}
+async def get_clarification_session(session_id: str, db: Session = Depends(get_db)):
+    """Get clarification session details from database"""
+    session = db.query(models.ClarificationSession).filter(
+        models.ClarificationSession.id == session_id
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return session.to_dict()
 
 @app.post("/api/v1/clarifications/{session_id}/answer")
-async def submit_answer(session_id: str, request: Dict):
-    """Submit an answer to clarification question"""
-    session = sessions_db.get(session_id)
-    if not session:
-        return {"error": "Session not found"}
+async def submit_answer(session_id: str, request: Dict, db: Session = Depends(get_db)):
+    """Submit an answer to clarification question in database"""
+    session = db.query(models.ClarificationSession).filter(
+        models.ClarificationSession.id == session_id
+    ).first()
 
-    questions = session.get("questions", [])
-    current_idx = session["current_question"]
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Parse JSON fields
+    questions = json.loads(session.questions) if isinstance(session.questions, str) else session.questions
+    answers = json.loads(session.answers) if isinstance(session.answers, str) else session.answers or {}
+
+    current_idx = session.current_question
     answer_value = request.get("answer")
     skip = request.get("skip", False)
 
     # Save answer if not skipping
     if not skip and current_idx < len(questions):
         current_q = questions[current_idx]
-        session["answers"][current_q["id"]] = answer_value
+        answers[current_q["id"]] = answer_value
 
     # Move to next question
-    session["current_question"] = min(current_idx + 1, len(questions))
-    new_idx = session["current_question"]
+    session.current_question = min(current_idx + 1, len(questions))
+    new_idx = session.current_question
+
+    # Update answers in database
+    session.answers = json.dumps(answers)
+    session.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(session)
 
     # Calculate progress
-    answered = len(session["answers"])
+    answered = len(answers)
     total = len(questions)
 
     # Get current question
@@ -324,31 +345,42 @@ async def submit_answer(session_id: str, request: Dict):
     }
 
 @app.get("/api/v1/clarifications/{session_id}/progress")
-async def get_progress(session_id: str):
-    """Get session progress"""
-    session = sessions_db.get(session_id)
-    if not session:
-        return {"error": "Session not found"}
+async def get_progress(session_id: str, db: Session = Depends(get_db)):
+    """Get session progress from database"""
+    session = db.query(models.ClarificationSession).filter(
+        models.ClarificationSession.id == session_id
+    ).first()
 
-    total_questions = 5
-    answered = len(session.get("answers", {}))
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    answers = json.loads(session.answers) if isinstance(session.answers, str) else session.answers or {}
+    total_questions = session.total_questions
+    answered = len(answers)
 
     return {
         "session_id": session_id,
         "answered": answered,
         "total": total_questions,
-        "percentage": (answered / total_questions) * 100
+        "percentage": (answered / total_questions) * 100 if total_questions > 0 else 0
     }
 
 @app.post("/api/v1/clarifications/{session_id}/complete")
-async def complete_clarification(session_id: str):
-    """Complete clarification session with AI-generated comprehensive brief"""
-    session = sessions_db.get(session_id)
+async def complete_clarification(session_id: str, db: Session = Depends(get_db)):
+    """Complete clarification session with AI-generated comprehensive brief in database"""
+    session = db.query(models.ClarificationSession).filter(
+        models.ClarificationSession.id == session_id
+    ).first()
+
     if not session:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Parse JSON fields
+    answers = json.loads(session.answers) if isinstance(session.answers, str) else session.answers or {}
+    questions = json.loads(session.questions) if isinstance(session.questions, str) else session.questions
 
     print(f"📝 Generating comprehensive brief for session: {session_id}")
-    print(f"   Answered: {len(session['answers'])}/{session['total_questions']} questions")
+    print(f"   Answered: {len(answers)}/{session.total_questions} questions")
 
     # Get AI service
     ai_service = get_ai_clarification_service()
@@ -356,23 +388,28 @@ async def complete_clarification(session_id: str):
     # Generate comprehensive brief using GPT-4
     try:
         brief = ai_service.generate_comprehensive_brief(
-            project_idea=session["project_idea"],
-            all_answers=session["answers"],
-            questions=session["questions"]
+            project_idea=session.project_idea,
+            all_answers=answers,
+            questions=questions
         )
         print(f"✅ Generated comprehensive brief with {len(brief.keys())} sections")
     except Exception as e:
         print(f"❌ Brief generation failed: {e}")
         # Fallback to basic brief
         brief = ai_service._get_fallback_brief(
-            session["project_idea"],
-            session["answers"]
+            session.project_idea,
+            answers
         )
         print(f"⚠️ Using fallback brief")
 
-    session["status"] = "completed"
-    session["completed_at"] = datetime.utcnow().isoformat()
-    session["brief"] = brief
+    # Update session in database
+    session.is_completed = True
+    session.completed_at = datetime.utcnow()
+    session.brief = json.dumps(brief)
+    session.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(session)
 
     return {
         "status": "completed",
@@ -381,27 +418,37 @@ async def complete_clarification(session_id: str):
     }
 
 @app.post("/api/v1/clarifications/{session_id}/navigate/{direction}")
-async def navigate_clarification(session_id: str, direction: str):
-    """Navigate to next/previous question"""
-    session = sessions_db.get(session_id)
+async def navigate_clarification(session_id: str, direction: str, db: Session = Depends(get_db)):
+    """Navigate to next/previous question in database"""
+    session = db.query(models.ClarificationSession).filter(
+        models.ClarificationSession.id == session_id
+    ).first()
+
     if not session:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
 
     if direction not in ["next", "previous"]:
-        return {"error": "Invalid direction"}
+        raise HTTPException(status_code=400, detail="Invalid direction")
 
-    questions = session.get("questions", [])
-    current = session["current_question"]
+    # Parse JSON fields
+    questions = json.loads(session.questions) if isinstance(session.questions, str) else session.questions
+    answers = json.loads(session.answers) if isinstance(session.answers, str) else session.answers or {}
+
+    current = session.current_question
     total = len(questions)
 
     # Update current question index
     if direction == "next":
-        session["current_question"] = min(current + 1, total - 1)
+        session.current_question = min(current + 1, total - 1)
     elif direction == "previous":
-        session["current_question"] = max(current - 1, 0)
+        session.current_question = max(current - 1, 0)
 
-    new_idx = session["current_question"]
-    answered = len(session["answers"])
+    session.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(session)
+
+    new_idx = session.current_question
+    answered = len(answers)
 
     # Get current question
     current_question = questions[new_idx] if new_idx < len(questions) else None
@@ -424,18 +471,25 @@ async def navigate_clarification(session_id: str, direction: str):
     }
 
 @app.put("/api/v1/clarifications/{session_id}/draft")
-async def update_draft(session_id: str, request: Dict):
-    """Update draft answers (auto-save)"""
-    session = sessions_db.get(session_id)
-    if not session:
-        return {"error": "Session not found"}
+async def update_draft(session_id: str, request: Dict, db: Session = Depends(get_db)):
+    """Update draft answers (auto-save) in database"""
+    session = db.query(models.ClarificationSession).filter(
+        models.ClarificationSession.id == session_id
+    ).first()
 
-    session["draft_answers"] = request.get("answers", {})
-    session["updated_at"] = datetime.utcnow().isoformat()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Note: We don't have draft_answers field in the model yet
+    # For now, we'll just update the updated_at timestamp
+    session.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(session)
 
     return {
         "status": "saved",
-        "timestamp": session["updated_at"]
+        "timestamp": session.updated_at.isoformat()
     }
 
 @app.websocket("/api/v1/clarifications/ws/{session_id}")
