@@ -11,14 +11,16 @@ import os
 # Load environment variables
 load_dotenv()
 
-# Import AI service (relative import)
+# Import AI services (relative import)
 try:
     from .ai_clarification_service import get_ai_clarification_service
+    from .ai_code_executor import get_code_executor
 except ImportError:
     # If relative import fails, try direct import
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     from ai_clarification_service import get_ai_clarification_service
+    from ai_code_executor import get_code_executor
 
 app = FastAPI(
     title="YAGO v8.0 API",
@@ -1192,6 +1194,152 @@ async def export_project(project_id: str):
             "error": f"Export failed: {str(e)}",
             "traceback": traceback.format_exc()
         }
+
+# ============================================================================
+# AI CODE EXECUTION ENDPOINTS
+# ============================================================================
+
+@app.post("/api/v1/projects/{project_id}/execute")
+async def execute_project_code_generation(project_id: str):
+    """
+    🚀 Execute AI agent to generate actual code for the project
+
+    This is the main feature of YAGO - transforms user requirements into working code!
+
+    Process:
+    1. Analyze project brief
+    2. Design architecture
+    3. Generate code files
+    4. Generate tests
+    5. Save to filesystem
+    """
+    try:
+        project = projects_db.get(project_id)
+        if not project:
+            return {"error": "Project not found"}
+
+        # Update project status
+        project["status"] = "executing"
+        project["started_at"] = datetime.utcnow().isoformat()
+        project["updated_at"] = datetime.utcnow().isoformat()
+
+        # Get executor
+        executor = get_code_executor()
+
+        # Execute code generation
+        result = await executor.execute_project(
+            project_id,
+            project.get("brief", {}),
+            project.get("config", {})
+        )
+
+        # Update project with results
+        project["status"] = "completed"
+        project["completed_at"] = datetime.utcnow().isoformat()
+        project["updated_at"] = datetime.utcnow().isoformat()
+        project["files_generated"] = result.get("files_generated", 0)
+        project["lines_of_code"] = result.get("lines_of_code", 0)
+        project["project_path"] = result.get("project_path", "")
+
+        # Estimate cost (rough estimate)
+        tokens_used = result.get("lines_of_code", 0) * 10  # ~10 tokens per line
+        project["actual_cost"] = round((tokens_used / 1000) * 0.002, 2)  # GPT-4 pricing
+
+        return {
+            "project_id": project_id,
+            "status": "success",
+            "message": "✅ Code generation completed!",
+            "result": result
+        }
+
+    except Exception as e:
+        # Update project status to failed
+        if project_id in projects_db:
+            projects_db[project_id]["status"] = "failed"
+            projects_db[project_id]["updated_at"] = datetime.utcnow().isoformat()
+            projects_db[project_id]["errors"].append({
+                "message": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            })
+
+        import traceback
+        return {
+            "error": f"Execution failed: {str(e)}",
+            "traceback": traceback.format_exc()
+        }
+
+@app.get("/api/v1/projects/{project_id}/files")
+async def list_project_files(project_id: str):
+    """Get list of generated files for a project"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    project_path = project.get("project_path")
+    if not project_path:
+        return {"files": [], "message": "Project not executed yet"}
+
+    try:
+        from pathlib import Path
+        path = Path(project_path)
+
+        if not path.exists():
+            return {"files": [], "message": "Project directory not found"}
+
+        files = []
+        for file in path.rglob("*"):
+            if file.is_file():
+                relative_path = file.relative_to(path)
+                files.append({
+                    "path": str(relative_path),
+                    "size": file.stat().st_size,
+                    "modified": datetime.fromtimestamp(file.stat().st_mtime).isoformat()
+                })
+
+        return {
+            "project_id": project_id,
+            "files": files,
+            "total_files": len(files)
+        }
+
+    except Exception as e:
+        return {"error": f"Failed to list files: {str(e)}"}
+
+@app.get("/api/v1/projects/{project_id}/files/{file_path:path}")
+async def get_project_file(project_id: str, file_path: str):
+    """Get content of a specific generated file"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    project_path = project.get("project_path")
+    if not project_path:
+        return {"error": "Project not executed yet"}
+
+    try:
+        from pathlib import Path
+        full_path = Path(project_path) / file_path
+
+        if not full_path.exists():
+            return {"error": "File not found"}
+
+        # Security check - ensure file is within project directory
+        if not str(full_path.resolve()).startswith(str(Path(project_path).resolve())):
+            return {"error": "Access denied"}
+
+        with open(full_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        return {
+            "project_id": project_id,
+            "file_path": file_path,
+            "content": content,
+            "size": len(content),
+            "lines": len(content.split('\n'))
+        }
+
+    except Exception as e:
+        return {"error": f"Failed to read file: {str(e)}"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
