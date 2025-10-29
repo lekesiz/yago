@@ -4,6 +4,7 @@ SQLAlchemy ORM models for PostgreSQL
 """
 
 import uuid
+import os
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, Float, Boolean, Text, ForeignKey, CheckConstraint, Index, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -11,14 +12,18 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import text
 
 try:
-    from .database import Base
+    from .database import Base, DATABASE_URL
 except ImportError:
-    from database import Base
+    from database import Base, DATABASE_URL
 
 
 # Helper function for UUID
 def generate_uuid():
     return str(uuid.uuid4())
+
+
+# Check if using PostgreSQL
+IS_POSTGRESQL = 'postgresql' in DATABASE_URL
 
 
 class Project(Base):
@@ -35,8 +40,8 @@ class Project(Base):
     progress = Column(Integer, default=0)
 
     # Configuration (stored as JSON)
-    brief = Column(JSONB) if 'postgresql' in str(Base.metadata.bind) else Column(Text)  # Fallback for SQLite
-    config = Column(JSONB) if 'postgresql' in str(Base.metadata.bind) else Column(Text)
+    brief = Column(JSONB if IS_POSTGRESQL else Text)  # Fallback for SQLite
+    config = Column(JSONB if IS_POSTGRESQL else Text)
 
     # Model selection
     primary_model = Column(String(100))
@@ -59,8 +64,8 @@ class Project(Base):
     lines_of_code = Column(Integer, default=0)
 
     # Errors and logs (stored as JSON)
-    errors = Column(JSONB, default=list) if 'postgresql' in str(Base.metadata.bind) else Column(Text, default="[]")
-    logs = Column(JSONB, default=list) if 'postgresql' in str(Base.metadata.bind) else Column(Text, default="[]")
+    errors = Column(JSONB, default=list) if IS_POSTGRESQL else Column(Text, default="[]")
+    logs = Column(JSONB, default=list) if IS_POSTGRESQL else Column(Text, default="[]")
 
     # User reference (for future auth)
     user_id = Column(String)
@@ -121,8 +126,8 @@ class ClarificationSession(Base):
     # Session data
     project_idea = Column(Text, nullable=False)
     depth = Column(String(20), nullable=False)
-    questions = Column(JSONB, nullable=False) if 'postgresql' in str(Base.metadata.bind) else Column(Text, nullable=False)
-    answers = Column(JSONB, default=dict) if 'postgresql' in str(Base.metadata.bind) else Column(Text, default="{}")
+    questions = Column(JSONB, nullable=False) if IS_POSTGRESQL else Column(Text, nullable=False)
+    answers = Column(JSONB, default=dict) if IS_POSTGRESQL else Column(Text, default="{}")
 
     # State
     current_question = Column(Integer, default=0)
