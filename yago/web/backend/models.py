@@ -87,7 +87,24 @@ class Project(Base):
     )
 
     def to_dict(self):
-        """Convert to dictionary"""
+        """Convert to dictionary with proper JSON parsing"""
+        import json
+
+        # Parse errors and logs if they are JSON strings
+        errors = self.errors
+        if isinstance(errors, str):
+            try:
+                errors = json.loads(errors)
+            except:
+                errors = []
+
+        logs = self.logs
+        if isinstance(logs, str):
+            try:
+                logs = json.loads(logs)
+            except:
+                logs = []
+
         return {
             "id": self.id,
             "name": self.name,
@@ -110,8 +127,8 @@ class Project(Base):
             "actual_cost": self.actual_cost,
             "files_generated": self.files_generated,
             "lines_of_code": self.lines_of_code,
-            "errors": self.errors or [],
-            "logs": self.logs or [],
+            "errors": errors or [],
+            "logs": logs or [],
         }
 
 
