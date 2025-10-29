@@ -1,0 +1,158 @@
+{
+  "timestamp": "2025-10-29T11:52:48.161231",
+  "tests": [
+    {
+      "name": "Page title correct",
+      "status": "\u2705 PASS",
+      "details": "Title: YAGO v7.1 - AI Development Platform"
+    },
+    {
+      "name": "No console errors",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Main content loaded",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Overview welcome text",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": "Welcome text not found"
+    },
+    {
+      "name": "Overview stat cards",
+      "status": "\u2705 PASS",
+      "details": "Found 8 cards"
+    },
+    {
+      "name": "Quick actions section",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "ClarificationFlow component",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Templates section",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Template cards",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": "No template cards found"
+    },
+    {
+      "name": "Models heading",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Provider filters",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Model cards",
+      "status": "\u2705 PASS",
+      "details": "Found 21 models"
+    },
+    {
+      "name": "Provider filter interaction",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Analytics heading",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Metric cards",
+      "status": "\u2705 PASS",
+      "details": "Found 21 metrics"
+    },
+    {
+      "name": "Time range selector",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": ""
+    },
+    {
+      "name": "Marketplace heading",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Category filters",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Marketplace items",
+      "status": "\u2705 PASS",
+      "details": "Found 5 items"
+    },
+    {
+      "name": "Install button present",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Navigate to Overview",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Navigate to Create Project",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Navigate to AI Models",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Navigate to Analytics",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Navigate to Marketplace",
+      "status": "\u2705 PASS",
+      "details": ""
+    },
+    {
+      "name": "Mobile layout",
+      "status": "\u2705 PASS",
+      "details": "375x667"
+    },
+    {
+      "name": "Tablet layout",
+      "status": "\u2705 PASS",
+      "details": "768x1024"
+    },
+    {
+      "name": "Desktop layout",
+      "status": "\u2705 PASS",
+      "details": "1920x1080"
+    },
+    {
+      "name": "Language switcher",
+      "status": "\u26a0\ufe0f  WARN",
+      "details": "Not found"
+    },
+    {
+      "name": "Network requests",
+      "status": "\u2705 PASS",
+      "details": "All requests successful"
+    }
+  ],
+  "passed": 20,
+  "failed": 0,
+  "warnings": 10
+}
