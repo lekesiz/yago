@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 import uvicorn
@@ -1395,13 +1396,13 @@ async def execute_project_code_generation(project_id: str, db: Session = Depends
         }
 
 @app.get("/api/v1/projects/{project_id}/files")
-async def list_project_files(project_id: str):
+async def list_project_files(project_id: str, db: Session = Depends(get_db)):
     """Get list of generated files for a project"""
-    project = projects_db.get(project_id)
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not project:
-        return {"error": "Project not found"}
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    project_path = project.get("project_path")
+    project_path = project.project_path
     if not project_path:
         return {"files": [], "message": "Project not executed yet"}
 
@@ -1424,34 +1425,35 @@ async def list_project_files(project_id: str):
 
         return {
             "project_id": project_id,
+            "project_path": str(path.absolute()),
             "files": files,
             "total_files": len(files)
         }
 
     except Exception as e:
-        return {"error": f"Failed to list files: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Failed to list files: {str(e)}")
 
 @app.get("/api/v1/projects/{project_id}/files/{file_path:path}")
-async def get_project_file(project_id: str, file_path: str):
+async def get_project_file(project_id: str, file_path: str, db: Session = Depends(get_db)):
     """Get content of a specific generated file"""
-    project = projects_db.get(project_id)
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not project:
-        return {"error": "Project not found"}
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    project_path = project.get("project_path")
+    project_path = project.project_path
     if not project_path:
-        return {"error": "Project not executed yet"}
+        raise HTTPException(status_code=400, detail="Project not executed yet")
 
     try:
         from pathlib import Path
         full_path = Path(project_path) / file_path
 
         if not full_path.exists():
-            return {"error": "File not found"}
+            raise HTTPException(status_code=404, detail="File not found")
 
         # Security check - ensure file is within project directory
         if not str(full_path.resolve()).startswith(str(Path(project_path).resolve())):
-            return {"error": "Access denied"}
+            raise HTTPException(status_code=403, detail="Access denied")
 
         with open(full_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -1464,8 +1466,63 @@ async def get_project_file(project_id: str, file_path: str):
             "lines": len(content.split('\n'))
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
-        return {"error": f"Failed to read file: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Failed to read file: {str(e)}")
+
+@app.get("/api/v1/projects/{project_id}/download")
+async def download_project_zip(project_id: str, db: Session = Depends(get_db)):
+    """Download project as ZIP file"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project_path = project.project_path
+    if not project_path:
+        raise HTTPException(status_code=400, detail="Project not executed yet")
+
+    try:
+        from pathlib import Path
+        import zipfile
+        import tempfile
+
+        path = Path(project_path)
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="Project directory not found")
+
+        # Create temporary ZIP file
+        temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        zip_path = temp_zip.name
+        temp_zip.close()
+
+        # Create ZIP archive
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file in path.rglob("*"):
+                if file.is_file():
+                    # Add file to ZIP with relative path
+                    arcname = file.relative_to(path)
+                    zipf.write(file, arcname=arcname)
+
+        # Get project name for filename
+        project_name = project.name or f"project_{project_id[:8]}"
+        safe_name = "".join(c for c in project_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        zip_filename = f"{safe_name}.zip"
+
+        # Return ZIP file
+        return FileResponse(
+            path=zip_path,
+            media_type='application/zip',
+            filename=zip_filename,
+            headers={
+                "Content-Disposition": f"attachment; filename={zip_filename}"
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create ZIP: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -27,6 +27,7 @@ interface Project {
   actual_cost: number;
   files_generated: number;
   lines_of_code: number;
+  project_path?: string;
   errors: Array<{ timestamp: string; error: string }>;
   logs: Array<{ timestamp: string; log: string }>;
 }
@@ -117,6 +118,33 @@ export const ProjectsTab: React.FC = () => {
     } catch (error) {
       console.error('Failed to resume project:', error);
       toast.error('Failed to resume project');
+    }
+  };
+
+  const downloadProjectZip = async (projectId: string, projectName: string) => {
+    try {
+      toast.loading('Preparing download...');
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/projects/${projectId}/download`,
+        { responseType: 'blob' }
+      );
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${projectName}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.dismiss();
+      toast.success('Project downloaded successfully!');
+    } catch (error) {
+      console.error('Failed to download project:', error);
+      toast.dismiss();
+      toast.error('Failed to download project');
     }
   };
 
@@ -305,6 +333,16 @@ export const ProjectsTab: React.FC = () => {
                     👁️ View Details
                   </button>
 
+                  {project.status === 'completed' && (
+                    <button
+                      onClick={() => downloadProjectZip(project.id, project.name)}
+                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-lg transition"
+                      title="Download project as ZIP"
+                    >
+                      📦 Download
+                    </button>
+                  )}
+
                   {project.status === 'creating' && (
                     <button
                       onClick={() => startProject(project.id)}
@@ -474,6 +512,30 @@ export const ProjectsTab: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Project Files */}
+                {selectedProject.status === 'completed' && selectedProject.project_path && (
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-3">📦 Project Files</h4>
+                    <div className="space-y-3">
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-xs text-gray-400 mb-2">Project Location</div>
+                        <div className="text-sm text-white font-mono bg-black/30 px-3 py-2 rounded break-all">
+                          {selectedProject.project_path}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => downloadProjectZip(selectedProject.id, selectedProject.name)}
+                        className="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
+                      >
+                        📦 Download Project as ZIP
+                      </button>
+                      <div className="text-xs text-gray-400 text-center">
+                        {selectedProject.files_generated} files • {selectedProject.lines_of_code} lines of code
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Errors */}
                 {selectedProject.errors && selectedProject.errors.length > 0 && (
