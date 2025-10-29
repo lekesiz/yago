@@ -13,8 +13,9 @@ import { QuestionCard } from './QuestionCard';
 import { ProgressBar } from './ProgressBar';
 import { NavigationControls } from './NavigationControls';
 import { Header } from './Header';
+import { AgentSelection } from './AgentSelection';
 
-type FlowStage = 'start' | 'clarifying' | 'completed';
+type FlowStage = 'start' | 'clarifying' | 'completed' | 'agent-selection' | 'project-created';
 
 export const ClarificationFlow: React.FC = () => {
   const [stage, setStage] = useState<FlowStage>('start');
@@ -193,9 +194,21 @@ export const ClarificationFlow: React.FC = () => {
 
   // Handle continue to agent selection
   const handleContinue = () => {
-    // TODO: Navigate to agent selection page (v7.1 future phase)
-    console.log('Continue to agent selection with brief:', completionBrief);
-    alert('Agent selection coming soon in v7.1!');
+    console.log('Moving to agent selection with brief:', completionBrief);
+    setStage('agent-selection');
+  };
+
+  // Handle agent selection complete
+  const handleAgentSelectionComplete = (config: any) => {
+    console.log('Project configuration:', config);
+    toast.success('🎉 Project created successfully!');
+    setStage('project-created');
+    // TODO: Actually create the project via API
+  };
+
+  // Handle back from agent selection
+  const handleBackFromAgentSelection = () => {
+    setStage('completed');
   };
 
   // Get project idea from session
@@ -321,6 +334,59 @@ export const ClarificationFlow: React.FC = () => {
                 onStartNew={handleStartNew}
                 onContinue={handleContinue}
               />
+            </motion.div>
+          )}
+
+          {/* AGENT SELECTION SCREEN */}
+          {stage === 'agent-selection' && completionBrief && (
+            <motion.div
+              key="agent-selection"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AgentSelection
+                brief={completionBrief}
+                onComplete={handleAgentSelectionComplete}
+                onBack={handleBackFromAgentSelection}
+              />
+            </motion.div>
+          )}
+
+          {/* PROJECT CREATED SCREEN */}
+          {stage === 'project-created' && (
+            <motion.div
+              key="project-created"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800"
+            >
+              <div className="text-center p-8">
+                <div className="text-8xl mb-6">🎉</div>
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                  Project Created!
+                </h1>
+                <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+                  Your AI agents are ready to start building.
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={handleStartNew}
+                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
+                  >
+                    ✨ Create Another Project
+                  </button>
+                  <button
+                    onClick={() => setStage('start')}
+                    className="px-8 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition"
+                  >
+                    🏠 Back to Dashboard
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
