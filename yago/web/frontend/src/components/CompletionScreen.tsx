@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Completion Screen Component
+ * YAGO v8.0 - Completion Screen Component
  * Shows results and generated brief after clarification
  */
 

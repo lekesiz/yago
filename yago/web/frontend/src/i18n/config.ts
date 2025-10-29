@@ -1,5 +1,5 @@
 /**
- * YAGO v7.2 - i18n Configuration
+ * YAGO v8.0 - i18n Configuration
  * Multi-language support for 7 languages
  */
 

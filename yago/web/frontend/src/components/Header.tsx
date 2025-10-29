@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Header Component
+ * YAGO v8.0 - Header Component
  * Logo, project name, theme toggle
  */
 
@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                YAGO v7.1
+                YAGO v8.0
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 AI Development Platform

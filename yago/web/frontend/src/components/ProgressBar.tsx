@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Progress Bar Component
+ * YAGO v8.0 - Progress Bar Component
  * Visual progress indicator with category breakdown
  */
 

@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Start Screen Component
+ * YAGO v8.0 - Start Screen Component
  * Initial screen for project idea input
  */
 
@@ -16,6 +16,7 @@ interface StartScreenProps {
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = false }) => {
   const [projectIdea, setProjectIdea] = useState('');
   const [depth, setDepth] = useState<'minimal' | 'standard' | 'full'>('standard');
+  const [aiProvider, setAiProvider] = useState<'auto' | 'openai' | 'anthropic' | 'gemini' | 'cursor'>('auto');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'custom' | 'template'>('template');
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateInfo | null>(null);
@@ -96,7 +97,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
           </motion.div>
 
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome to YAGO v7.1
+            Welcome to YAGO v8.0
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             AI-powered development platform that builds production-ready code from your ideas.
@@ -205,42 +206,6 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
               </div>
             </div>
 
-            {/* Depth Selection */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                How detailed should the clarification be?
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {depthOptions.map((option) => (
-                  <motion.button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setDepth(option.value)}
-                    disabled={loading}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                      ${
-                        depth === option.value
-                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
-                      }`}
-                  >
-                    <div className="text-3xl mb-2">{option.icon}</div>
-                    <div className="font-semibold text-gray-900 dark:text-white mb-1">
-                      {option.title}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {option.description}
-                    </div>
-                    <div className="text-xs text-primary-600 dark:text-primary-400 font-medium">
-                      {option.time}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
           </form>
           )}
 
@@ -278,6 +243,48 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, loading = fal
                 </motion.button>
               ))}
             </div>
+          </div>
+
+          {/* AI Provider Selection */}
+          <div className="mb-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              🤖 AI Provider (Optional)
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {[
+                { value: 'auto', label: 'Auto', icon: '🎯', desc: 'Best for task' },
+                { value: 'openai', label: 'OpenAI', icon: '🟢', desc: 'GPT-4' },
+                { value: 'anthropic', label: 'Claude', icon: '🔵', desc: 'Opus' },
+                { value: 'gemini', label: 'Gemini', icon: '🔴', desc: 'Pro' },
+                { value: 'cursor', label: 'Cursor', icon: '⚡', desc: 'Code' },
+              ].map((provider) => (
+                <motion.button
+                  key={provider.value}
+                  type="button"
+                  onClick={() => setAiProvider(provider.value as any)}
+                  disabled={loading}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                    ${
+                      aiProvider === provider.value
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary-300'
+                    }`}
+                >
+                  <div className="text-2xl mb-1">{provider.icon}</div>
+                  <div className="font-semibold text-xs text-gray-900 dark:text-white">
+                    {provider.label}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {provider.desc}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Auto mode intelligently selects the best AI for each task: GPT-3.5 for questions, Claude Opus for detailed analysis
+            </p>
           </div>
 
           {/* Submit Button - Common for both tabs */}

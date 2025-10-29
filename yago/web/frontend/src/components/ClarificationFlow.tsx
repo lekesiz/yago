@@ -1,11 +1,12 @@
 /**
- * YAGO v7.1 - Clarification Flow Container
+ * YAGO v8.0 - Clarification Flow Container
  * Main orchestrator component for the entire clarification process
  */
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 import { useClarificationStore } from '../store/clarificationStore';
 import { StartScreen } from './StartScreen';
 import { CompletionScreen } from './CompletionScreen';
@@ -199,11 +200,23 @@ export const ClarificationFlow: React.FC = () => {
   };
 
   // Handle agent selection complete
-  const handleAgentSelectionComplete = (config: any) => {
+  const handleAgentSelectionComplete = async (config: any) => {
     console.log('Project configuration:', config);
-    toast.success('🎉 Project created successfully!');
-    setStage('project-created');
-    // TODO: Actually create the project via API
+
+    try {
+      // Create project via API
+      const response = await axios.post('http://localhost:8000/api/v1/projects', {
+        brief: completionBrief,
+        config: config
+      });
+
+      console.log('Project created:', response.data);
+      toast.success(`🎉 Project created successfully! ID: ${response.data.project_id.slice(0, 8)}...`);
+      setStage('project-created');
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      toast.error('Failed to create project. Please try again.');
+    }
   };
 
   // Handle back from agent selection

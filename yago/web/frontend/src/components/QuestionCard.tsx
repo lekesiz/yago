@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Question Card Component
+ * YAGO v8.0 - Question Card Component
  * Displays a question and handles user input based on question type
  */
 

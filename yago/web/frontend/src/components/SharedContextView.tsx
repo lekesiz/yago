@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Shared Context View Component
+ * YAGO v8.0 - Shared Context View Component
  * Display and manage shared context across agents
  */
 

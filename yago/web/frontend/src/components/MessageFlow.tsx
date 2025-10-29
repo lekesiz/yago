@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Message Flow Component
+ * YAGO v8.0 - Message Flow Component
  * Visualization of inter-agent message communication
  */
 

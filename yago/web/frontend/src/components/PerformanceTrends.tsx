@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Performance Trends Component
+ * YAGO v8.0 - Performance Trends Component
  * Visualize performance trends over time with charts
  */
 

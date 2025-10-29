@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Benchmark Type Definitions
+ * YAGO v8.0 - Benchmark Type Definitions
  * Types for performance benchmarking and testing
  */
 

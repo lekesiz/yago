@@ -11,12 +11,13 @@ import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { AIModelsTab } from './components/AIModelsTab';
 import { AnalyticsTab } from './components/AnalyticsTab';
 import { MarketplaceTab } from './components/MarketplaceTab';
+import { ProjectsTab } from './components/ProjectsTab';
 import './i18n/config';
 import './index.css';
 
 const App: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
-  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'models' | 'analytics' | 'marketplace'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace'>('overview');
 
   useEffect(() => {
     // Check backend health
@@ -72,10 +73,11 @@ const App: React.FC = () => {
 
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="flex space-x-2 bg-black/20 backdrop-blur-sm rounded-lg p-1">
+        <div className="flex space-x-2 bg-black/20 backdrop-blur-sm rounded-lg p-1 overflow-x-auto">
           {[
             { id: 'overview', label: '📊 Overview' },
             { id: 'create', label: '✨ Create Project' },
+            { id: 'projects', label: '🗂️ Projects' },
             { id: 'models', label: '🤖 AI Models' },
             { id: 'analytics', label: '📈 Analytics' },
             { id: 'marketplace', label: '🛒 Marketplace' },
@@ -83,7 +85,7 @@ const App: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition ${
+              className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-purple-600 text-white shadow-lg'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -101,6 +103,7 @@ const App: React.FC = () => {
           <Suspense fallback={<div className="text-white text-center">Loading...</div>}>
             {activeTab === 'overview' && <OverviewTab />}
             {activeTab === 'create' && <ClarificationFlow />}
+            {activeTab === 'projects' && <ProjectsTab />}
             {activeTab === 'models' && <AIModelsTab />}
             {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'marketplace' && <MarketplaceTab />}

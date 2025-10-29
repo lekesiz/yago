@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Comparison View Component
+ * YAGO v8.0 - Comparison View Component
  * Compare multiple benchmark results side-by-side
  */
 

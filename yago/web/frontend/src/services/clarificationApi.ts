@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - API Service for Clarification
+ * YAGO v8.0 - API Service for Clarification
  */
 
 import axios from 'axios';

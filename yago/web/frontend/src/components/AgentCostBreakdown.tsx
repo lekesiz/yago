@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Agent Cost Breakdown Component
+ * YAGO v8.0 - Agent Cost Breakdown Component
  * Detailed cost analysis per agent
  */
 

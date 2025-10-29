@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Navigation Controls Component
+ * YAGO v8.0 - Navigation Controls Component
  * Next, Previous, Skip, and Finish buttons
  */
 

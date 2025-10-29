@@ -1,5 +1,5 @@
 /**
- * YAGO v7.2 - Language Switcher Component
+ * YAGO v8.0 - Language Switcher Component
  * Allows users to switch between 7 supported languages
  */
 

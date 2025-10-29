@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Collaboration Dashboard Component
+ * YAGO v8.0 - Collaboration Dashboard Component
  * Main dashboard for monitoring multi-agent collaboration
  */
 

@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Template Selector Component
+ * YAGO v8.0 - Template Selector Component
  * Allows users to browse and select project templates
  */
 

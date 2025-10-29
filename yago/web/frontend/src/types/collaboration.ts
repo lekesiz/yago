@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Agent Collaboration Types
+ * YAGO v8.0 - Agent Collaboration Types
  * TypeScript definitions for agent collaboration and message passing
  */
 

@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Template Types
+ * YAGO v8.0 - Template Types
  * TypeScript types for project templates
  */
 

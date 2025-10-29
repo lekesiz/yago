@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Benchmark Dashboard Component
+ * YAGO v8.0 - Benchmark Dashboard Component
  * Main dashboard for performance benchmarking and testing
  */
 

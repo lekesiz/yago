@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Template Card Component
+ * YAGO v8.0 - Template Card Component
  * Displays individual template information
  */
 

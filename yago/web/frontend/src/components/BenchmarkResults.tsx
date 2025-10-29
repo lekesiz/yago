@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Benchmark Results Component
+ * YAGO v8.0 - Benchmark Results Component
  * Display individual benchmark results with detailed metrics
  */
 

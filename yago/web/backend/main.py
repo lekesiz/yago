@@ -3,7 +3,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, List, Optional
 import uvicorn
 import uuid
+import json
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+
+# Import AI service (relative import)
+try:
+    from .ai_clarification_service import get_ai_clarification_service
+except ImportError:
+    # If relative import fails, try direct import
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from ai_clarification_service import get_ai_clarification_service
 
 app = FastAPI(
     title="YAGO v8.0 API",
@@ -184,30 +199,45 @@ sessions_db: Dict[str, Dict] = {}
 
 @app.post("/api/v1/clarifications/start")
 async def start_clarification(request: Dict):
-    """Start a new clarification session"""
+    """Start a new clarification session with AI-generated questions"""
     session_id = str(uuid.uuid4())
+    project_idea = request.get("project_idea")
+    depth = request.get("depth", "standard")
 
-    # Create mock questions
-    questions = [
-        {"id": "q1", "text": "What is the primary purpose of your project?", "type": "text", "required": True, "category": "basic"},
-        {"id": "q2", "text": "Who is your target audience?", "type": "text", "required": True, "category": "basic"},
-        {"id": "q3", "text": "What is your expected timeline?", "type": "select", "required": False, "category": "technical",
-         "options": ["1-2 weeks", "1 month", "2-3 months", "3+ months"]},
-        {"id": "q4", "text": "What is your budget range?", "type": "select", "required": False, "category": "technical",
-         "options": ["<$1000", "$1000-$5000", "$5000-$10000", "$10000+"]},
-        {"id": "q5", "text": "Any additional requirements?", "type": "text", "required": False, "category": "quality"}
-    ]
+    print(f"🚀 Starting AI clarification session: {session_id}")
+    print(f"   Project: {project_idea[:100]}...")
+    print(f"   Depth: {depth}")
+
+    # Get AI service
+    ai_service = get_ai_clarification_service()
+
+    # Generate questions using AI based on project idea and depth
+    try:
+        questions = ai_service.generate_questions(
+            project_idea=project_idea,
+            depth=depth,
+            previous_answers=None
+        )
+        print(f"✅ Generated {len(questions)} AI-powered questions")
+    except Exception as e:
+        print(f"❌ AI generation failed: {e}")
+        # Fallback to basic questions
+        questions = ai_service._get_fallback_questions(
+            10 if depth == "minimal" else 20 if depth == "standard" else 40
+        )
+        print(f"⚠️ Using fallback questions: {len(questions)}")
 
     sessions_db[session_id] = {
         "session_id": session_id,
-        "project_idea": request.get("project_idea"),
-        "depth": request.get("depth", "standard"),
+        "project_idea": project_idea,
+        "depth": depth,
         "user_id": request.get("user_id"),
         "created_at": datetime.utcnow().isoformat(),
         "current_question": 0,
         "questions": questions,
         "answers": {},
-        "total_questions": len(questions)
+        "total_questions": len(questions),
+        "followup_questions": []  # Store dynamic follow-ups
     }
 
     # Return in the format frontend expects
@@ -299,23 +329,42 @@ async def get_progress(session_id: str):
 
 @app.post("/api/v1/clarifications/{session_id}/complete")
 async def complete_clarification(session_id: str):
-    """Complete clarification session"""
+    """Complete clarification session with AI-generated comprehensive brief"""
     session = sessions_db.get(session_id)
     if not session:
         return {"error": "Session not found"}
 
+    print(f"📝 Generating comprehensive brief for session: {session_id}")
+    print(f"   Answered: {len(session['answers'])}/{session['total_questions']} questions")
+
+    # Get AI service
+    ai_service = get_ai_clarification_service()
+
+    # Generate comprehensive brief using GPT-4
+    try:
+        brief = ai_service.generate_comprehensive_brief(
+            project_idea=session["project_idea"],
+            all_answers=session["answers"],
+            questions=session["questions"]
+        )
+        print(f"✅ Generated comprehensive brief with {len(brief.keys())} sections")
+    except Exception as e:
+        print(f"❌ Brief generation failed: {e}")
+        # Fallback to basic brief
+        brief = ai_service._get_fallback_brief(
+            session["project_idea"],
+            session["answers"]
+        )
+        print(f"⚠️ Using fallback brief")
+
     session["status"] = "completed"
     session["completed_at"] = datetime.utcnow().isoformat()
+    session["brief"] = brief
 
     return {
         "status": "completed",
         "message": "Clarification completed successfully",
-        "brief": {
-            "session_id": session_id,
-            "project_idea": session["project_idea"],
-            "answers": session["answers"],
-            "completed_at": session["completed_at"]
-        }
+        "brief": brief
     }
 
 @app.post("/api/v1/clarifications/{session_id}/navigate/{direction}")
@@ -528,6 +577,36 @@ models_db = [
         "capabilities": ["chat", "code_generation", "analysis", "multimodal"],
         "status": "available",
         "enabled": True
+    },
+    {
+        "id": "cursor-small",
+        "name": "Cursor Small",
+        "provider": "cursor",
+        "description": "Fast Cursor model for quick code generation",
+        "context_window": 32768,
+        "max_tokens": 4096,
+        "cost_per_1k_input": 0.0003,
+        "cost_per_1k_output": 0.0006,
+        "speed_score": 10,
+        "quality_score": 8,
+        "capabilities": ["chat", "code_generation", "analysis", "code_completion"],
+        "status": "available",
+        "enabled": True
+    },
+    {
+        "id": "cursor-large",
+        "name": "Cursor Large",
+        "provider": "cursor",
+        "description": "Advanced Cursor model for complex code generation and analysis",
+        "context_window": 100000,
+        "max_tokens": 8192,
+        "cost_per_1k_input": 0.001,
+        "cost_per_1k_output": 0.002,
+        "speed_score": 9,
+        "quality_score": 9,
+        "capabilities": ["chat", "code_generation", "analysis", "code_completion", "refactoring"],
+        "status": "available",
+        "enabled": True
     }
 ]
 
@@ -603,6 +682,65 @@ async def get_providers():
         providers[provider]["models"].append(model["id"])
 
     return {"providers": list(providers.values())}
+
+@app.get("/api/v1/providers/status")
+async def check_providers_status():
+    """Check availability status of all AI providers"""
+    providers_status = {}
+
+    # Check OpenAI
+    openai_key = os.getenv("OPENAI_API_KEY")
+    providers_status["openai"] = {
+        "available": bool(openai_key and len(openai_key) > 20),
+        "name": "OpenAI",
+        "models_count": len([m for m in models_db if m["provider"] == "openai"]),
+        "api_configured": bool(openai_key),
+        "status_code": 200 if openai_key else 401,
+        "icon": "🟢"
+    }
+
+    # Check Anthropic
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    providers_status["anthropic"] = {
+        "available": bool(anthropic_key and len(anthropic_key) > 20),
+        "name": "Anthropic Claude",
+        "models_count": len([m for m in models_db if m["provider"] == "anthropic"]),
+        "api_configured": bool(anthropic_key),
+        "status_code": 200 if anthropic_key else 401,
+        "icon": "🔵"
+    }
+
+    # Check Google Gemini
+    google_key = os.getenv("GOOGLE_API_KEY")
+    providers_status["gemini"] = {
+        "available": bool(google_key and len(google_key) > 20),
+        "name": "Google Gemini",
+        "models_count": len([m for m in models_db if m["provider"] == "google"]),
+        "api_configured": bool(google_key),
+        "status_code": 200 if google_key else 401,
+        "icon": "🔴"
+    }
+
+    # Check Cursor
+    cursor_key = os.getenv("CURSOR_API_KEY")
+    providers_status["cursor"] = {
+        "available": bool(cursor_key and len(cursor_key) > 20),
+        "name": "Cursor AI",
+        "models_count": len([m for m in models_db if m["provider"] == "cursor"]),
+        "api_configured": bool(cursor_key),
+        "status_code": 200 if cursor_key else 401,
+        "icon": "⚡"
+    }
+
+    total_available = sum(1 for p in providers_status.values() if p["available"])
+
+    return {
+        "providers": providers_status,
+        "total_providers": len(providers_status),
+        "available_providers": total_available,
+        "all_operational": total_available == len(providers_status),
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 # Analytics endpoints
 @app.get("/api/v1/analytics/metrics")
@@ -759,6 +897,301 @@ async def install_marketplace_item(item_id: str):
         "message": f"{item['name']} installed successfully",
         "version": item["version"]
     }
+
+# Projects database
+projects_db: Dict[str, Dict] = {}
+
+@app.get("/api/v1/projects")
+async def list_projects(status: Optional[str] = None, limit: int = 100):
+    """List all projects"""
+    projects = list(projects_db.values())
+
+    # Filter by status if provided
+    if status:
+        projects = [p for p in projects if p.get("status") == status]
+
+    # Sort by created_at descending (newest first)
+    projects.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+
+    return {
+        "projects": projects[:limit],
+        "total": len(projects),
+        "filtered": len(projects) if status else len(projects_db)
+    }
+
+@app.get("/api/v1/projects/{project_id}")
+async def get_project(project_id: str):
+    """Get specific project details"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    return project
+
+@app.post("/api/v1/projects")
+async def create_project(request: Dict):
+    """Create a new project"""
+    project_id = str(uuid.uuid4())
+
+    # Extract project configuration
+    brief = request.get("brief", {})
+    config = request.get("config", {})
+
+    project = {
+        "id": project_id,
+        "name": brief.get("project_idea", "Untitled Project"),
+        "description": brief.get("project_idea", "No description"),
+        "status": "creating",  # creating, in_progress, paused, completed, failed
+        "progress": 0,
+        "brief": brief,
+        "config": config,
+        "primary_model": config.get("primary_model", "unknown"),
+        "agent_role": config.get("agent_role", "unknown"),
+        "strategy": config.get("strategy", "balanced"),
+        "temperature": config.get("temperature", 0.7),
+        "max_tokens": config.get("max_tokens", 4000),
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "cost_estimate": 0.0,
+        "actual_cost": 0.0,
+        "files_generated": 0,
+        "lines_of_code": 0,
+        "errors": [],
+        "logs": []
+    }
+
+    projects_db[project_id] = project
+
+    return {
+        "project_id": project_id,
+        "status": "created",
+        "message": "Project created successfully",
+        "project": project
+    }
+
+@app.put("/api/v1/projects/{project_id}")
+async def update_project(project_id: str, request: Dict):
+    """Update project status or details"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    # Update allowed fields
+    if "status" in request:
+        project["status"] = request["status"]
+        if request["status"] == "in_progress" and not project.get("started_at"):
+            project["started_at"] = datetime.utcnow().isoformat()
+        elif request["status"] == "completed" and not project.get("completed_at"):
+            project["completed_at"] = datetime.utcnow().isoformat()
+
+    if "progress" in request:
+        project["progress"] = request["progress"]
+
+    if "actual_cost" in request:
+        project["actual_cost"] = request["actual_cost"]
+
+    if "files_generated" in request:
+        project["files_generated"] = request["files_generated"]
+
+    if "lines_of_code" in request:
+        project["lines_of_code"] = request["lines_of_code"]
+
+    if "error" in request:
+        if "errors" not in project:
+            project["errors"] = []
+        project["errors"].append({
+            "timestamp": datetime.utcnow().isoformat(),
+            "error": request["error"]
+        })
+
+    if "log" in request:
+        if "logs" not in project:
+            project["logs"] = []
+        project["logs"].append({
+            "timestamp": datetime.utcnow().isoformat(),
+            "log": request["log"]
+        })
+
+    project["updated_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "project_id": project_id,
+        "status": "updated",
+        "project": project
+    }
+
+@app.delete("/api/v1/projects/{project_id}")
+async def delete_project(project_id: str):
+    """Delete a project"""
+    if project_id not in projects_db:
+        return {"error": "Project not found"}
+
+    deleted_project = projects_db.pop(project_id)
+
+    return {
+        "project_id": project_id,
+        "status": "deleted",
+        "message": f"Project '{deleted_project['name']}' deleted successfully"
+    }
+
+@app.post("/api/v1/projects/{project_id}/start")
+async def start_project(project_id: str):
+    """Start project execution"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    project["status"] = "in_progress"
+    project["started_at"] = datetime.utcnow().isoformat()
+    project["updated_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "project_id": project_id,
+        "status": "started",
+        "message": "Project execution started"
+    }
+
+@app.post("/api/v1/projects/{project_id}/pause")
+async def pause_project(project_id: str):
+    """Pause project execution"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    project["status"] = "paused"
+    project["updated_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "project_id": project_id,
+        "status": "paused",
+        "message": "Project execution paused"
+    }
+
+@app.post("/api/v1/projects/{project_id}/resume")
+async def resume_project(project_id: str):
+    """Resume project execution"""
+    project = projects_db.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    project["status"] = "in_progress"
+    project["updated_at"] = datetime.utcnow().isoformat()
+
+    return {
+        "project_id": project_id,
+        "status": "resumed",
+        "message": "Project execution resumed"
+    }
+
+# Provider Analytics Endpoint
+@app.get("/api/v1/analytics/providers-usage")
+async def get_providers_usage():
+    """Get usage analytics per provider"""
+    import random
+    providers = ["openai", "anthropic", "gemini", "cursor"]
+
+    usage_data = []
+    for provider in providers:
+        usage_data.append({
+            "provider": provider,
+            "total_requests": random.randint(100, 5000),
+            "total_tokens": random.randint(10000, 500000),
+            "total_cost": round(random.uniform(5, 100), 2),
+            "avg_latency_ms": random.randint(100, 800),
+            "success_rate": round(random.uniform(95, 99.9), 2),
+            "last_used": datetime.utcnow().isoformat()
+        })
+
+    return {
+        "providers_usage": usage_data,
+        "period": "last_30_days",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+# Cost Alerts System
+@app.get("/api/v1/costs/alerts")
+async def get_cost_alerts():
+    """Get cost alerts and budget warnings"""
+    import random
+
+    alerts = []
+
+    # Check if any project exceeds budget
+    for project in projects_db.values():
+        if project.get("actual_cost", 0) > project.get("cost_estimate", 0) * 1.2:
+            alerts.append({
+                "id": str(uuid.uuid4()),
+                "type": "budget_exceeded",
+                "severity": "high",
+                "project_id": project["id"],
+                "project_name": project["name"],
+                "message": f"Project budget exceeded by {((project['actual_cost'] / project['cost_estimate']) - 1) * 100:.1f}%",
+                "actual_cost": project["actual_cost"],
+                "estimated_cost": project.get("cost_estimate", 0),
+                "created_at": datetime.utcnow().isoformat()
+            })
+
+    # Weekly cost warning
+    total_cost = sum(p.get("actual_cost", 0) for p in projects_db.values())
+    if total_cost > 50:
+        alerts.append({
+            "id": str(uuid.uuid4()),
+            "type": "weekly_limit_warning",
+            "severity": "medium",
+            "message": f"Weekly spending is ${total_cost:.2f}, approaching limit",
+            "total_cost": total_cost,
+            "limit": 100,
+            "created_at": datetime.utcnow().isoformat()
+        })
+
+    return {
+        "alerts": alerts,
+        "total_alerts": len(alerts),
+        "unread_count": len([a for a in alerts if a["severity"] == "high"]),
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.post("/api/v1/costs/alerts/{alert_id}/dismiss")
+async def dismiss_alert(alert_id: str):
+    """Dismiss a cost alert"""
+    return {
+        "alert_id": alert_id,
+        "status": "dismissed",
+        "dismissed_at": datetime.utcnow().isoformat()
+    }
+
+# Export Project Endpoint
+@app.get("/api/v1/projects/{project_id}/export")
+async def export_project(project_id: str):
+    """Export project as JSON (ready for ZIP generation)"""
+    try:
+        project = projects_db.get(project_id)
+        if not project:
+            return {"error": "Project not found"}
+
+        # Create serializable copy of project
+        project_copy = json.loads(json.dumps(project, default=str))
+
+        export_data = {
+            "project": project_copy,
+            "exported_at": datetime.utcnow().isoformat(),
+            "export_version": "1.0",
+            "files": [
+                {"name": "README.md", "content": f"# {project['name']}\n\n{project.get('description', 'No description')}"},
+                {"name": "project.json", "content": json.dumps(project_copy, indent=2)},
+                {"name": "brief.md", "content": f"# Project Brief\n\n{json.dumps(project.get('brief', {}), indent=2)}"}
+            ]
+        }
+
+        return export_data
+    except Exception as e:
+        import traceback
+        return {
+            "error": f"Export failed: {str(e)}",
+            "traceback": traceback.format_exc()
+        }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Agent Status Panel Component
+ * YAGO v8.0 - Agent Status Panel Component
  * Real-time monitoring of agent activities and status
  */
 

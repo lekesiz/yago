@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Template API Service
+ * YAGO v8.0 - Template API Service
  * API client for template management
  */
 

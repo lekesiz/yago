@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Conflict Resolver Component
+ * YAGO v8.0 - Conflict Resolver Component
  * Interface for detecting and resolving agent conflicts
  */
 

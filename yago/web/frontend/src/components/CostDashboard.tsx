@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Cost Dashboard Component
+ * YAGO v8.0 - Cost Dashboard Component
  * Main cost tracking dashboard with real-time updates
  */
 

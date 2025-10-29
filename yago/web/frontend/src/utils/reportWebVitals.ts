@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Web Vitals Reporter
+ * YAGO v8.0 - Web Vitals Reporter
  * Tracks Core Web Vitals for performance monitoring
  */
 

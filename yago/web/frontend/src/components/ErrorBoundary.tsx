@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Error Boundary Component
+ * YAGO v8.0 - Error Boundary Component
  * Catches and displays React errors gracefully
  */
 

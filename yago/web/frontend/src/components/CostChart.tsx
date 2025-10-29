@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Cost Chart Component
+ * YAGO v8.0 - Cost Chart Component
  * Beautiful data visualizations for cost breakdown
  */
 

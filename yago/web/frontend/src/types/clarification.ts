@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - TypeScript Types for Clarification UI
+ * YAGO v8.0 - TypeScript Types for Clarification UI
  */
 
 export type QuestionType = 'text' | 'select' | 'multiselect' | 'checkbox' | 'slider';

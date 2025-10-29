@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Cost Tracking API Service
+ * YAGO v8.0 - Cost Tracking API Service
  * API client for cost tracking endpoints
  */
 

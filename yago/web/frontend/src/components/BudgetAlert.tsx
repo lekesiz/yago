@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Budget Alert Component
+ * YAGO v8.0 - Budget Alert Component
  * Real-time budget monitoring and warnings
  */
 

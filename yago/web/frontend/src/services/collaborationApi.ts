@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Collaboration API Service
+ * YAGO v8.0 - Collaboration API Service
  * API client for agent collaboration endpoints
  */
 

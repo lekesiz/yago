@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Benchmark API Service
+ * YAGO v8.0 - Benchmark API Service
  * API client for benchmark and performance testing endpoints
  */
 

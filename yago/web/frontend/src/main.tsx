@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Application Entry Point
+ * YAGO v8.0 - Application Entry Point
  */
 
 import React from 'react';

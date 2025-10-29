@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Cost Optimization Suggestions Component
+ * YAGO v8.0 - Cost Optimization Suggestions Component
  * AI-powered cost saving recommendations
  */
 

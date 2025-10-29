@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Cost Tracking Types
+ * YAGO v8.0 - Cost Tracking Types
  * TypeScript definitions for cost tracking dashboard
  */
 

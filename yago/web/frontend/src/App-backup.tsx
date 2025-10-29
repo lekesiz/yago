@@ -1,5 +1,5 @@
 /**
- * YAGO v7.2 - Root Application Component
+ * YAGO v8.0 - Root Application Component
  * Main entry point for the React application with i18n support
  */
 

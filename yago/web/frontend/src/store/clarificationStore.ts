@@ -1,5 +1,5 @@
 /**
- * YAGO v7.1 - Zustand Store for Clarification State
+ * YAGO v8.0 - Zustand Store for Clarification State
  */
 
 import { create } from 'zustand';
