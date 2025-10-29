@@ -1,6 +1,7 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, List, Optional
+from sqlalchemy.orm import Session
 import uvicorn
 import uuid
 import json
@@ -10,6 +11,16 @@ import os
 
 # Load environment variables
 load_dotenv()
+
+# Import database
+try:
+    from .database import get_db, engine, Base
+    from . import models
+except ImportError:
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from database import get_db, engine, Base
+    import models
 
 # Import AI services (relative import)
 try:
@@ -900,154 +911,184 @@ async def install_marketplace_item(item_id: str):
         "version": item["version"]
     }
 
-# Projects database
-projects_db: Dict[str, Dict] = {}
+# Projects database - MIGRATED TO DATABASE
+# projects_db: Dict[str, Dict] = {}  # Old in-memory storage
 
 @app.get("/api/v1/projects")
-async def list_projects(status: Optional[str] = None, limit: int = 100):
-    """List all projects"""
-    projects = list(projects_db.values())
+async def list_projects(
+    status: Optional[str] = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """List all projects from database"""
+    # Query projects from database
+    query = db.query(models.Project)
 
     # Filter by status if provided
     if status:
-        projects = [p for p in projects if p.get("status") == status]
+        query = query.filter(models.Project.status == status)
 
     # Sort by created_at descending (newest first)
-    projects.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    query = query.order_by(models.Project.created_at.desc())
+
+    # Get total count before limit
+    total = query.count()
+
+    # Apply limit
+    projects = query.limit(limit).all()
+
+    # Convert to dict
+    projects_list = [project.to_dict() for project in projects]
 
     return {
-        "projects": projects[:limit],
-        "total": len(projects),
-        "filtered": len(projects) if status else len(projects_db)
+        "projects": projects_list,
+        "total": total,
+        "filtered": total
     }
 
 @app.get("/api/v1/projects/{project_id}")
-async def get_project(project_id: str):
-    """Get specific project details"""
-    project = projects_db.get(project_id)
-    if not project:
-        return {"error": "Project not found"}
+async def get_project(project_id: str, db: Session = Depends(get_db)):
+    """Get specific project details from database"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
 
-    return project
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    return project.to_dict()
 
 @app.post("/api/v1/projects")
-async def create_project(request: Dict):
-    """Create a new project"""
+async def create_project(request: Dict, db: Session = Depends(get_db)):
+    """Create a new project in database"""
     project_id = str(uuid.uuid4())
 
     # Extract project configuration
     brief = request.get("brief", {})
     config = request.get("config", {})
 
-    project = {
-        "id": project_id,
-        "name": brief.get("project_idea", "Untitled Project"),
-        "description": brief.get("project_idea", "No description"),
-        "status": "creating",  # creating, in_progress, paused, completed, failed
-        "progress": 0,
-        "brief": brief,
-        "config": config,
-        "primary_model": config.get("primary_model", "unknown"),
-        "agent_role": config.get("agent_role", "unknown"),
-        "strategy": config.get("strategy", "balanced"),
-        "temperature": config.get("temperature", 0.7),
-        "max_tokens": config.get("max_tokens", 4000),
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
-        "started_at": None,
-        "completed_at": None,
-        "cost_estimate": 0.0,
-        "actual_cost": 0.0,
-        "files_generated": 0,
-        "lines_of_code": 0,
-        "errors": [],
-        "logs": []
-    }
+    # Create new project model
+    project = models.Project(
+        id=project_id,
+        name=brief.get("project_idea", "Untitled Project"),
+        description=brief.get("project_idea", "No description"),
+        status="creating",
+        progress=0,
+        brief=json.dumps(brief) if isinstance(brief, dict) else brief,
+        config=json.dumps(config) if isinstance(config, dict) else config,
+        primary_model=config.get("primary_model", "unknown"),
+        agent_role=config.get("agent_role", "unknown"),
+        strategy=config.get("strategy", "balanced"),
+        temperature=config.get("temperature", 0.7),
+        max_tokens=config.get("max_tokens", 4000),
+        cost_estimate=0.0,
+        actual_cost=0.0,
+        files_generated=0,
+        lines_of_code=0,
+        errors=json.dumps([]),
+        logs=json.dumps([])
+    )
 
-    projects_db[project_id] = project
+    # Add to database
+    db.add(project)
+    db.commit()
+    db.refresh(project)
 
     return {
         "project_id": project_id,
         "status": "created",
         "message": "Project created successfully",
-        "project": project
+        "project": project.to_dict()
     }
 
 @app.put("/api/v1/projects/{project_id}")
-async def update_project(project_id: str, request: Dict):
-    """Update project status or details"""
-    project = projects_db.get(project_id)
+async def update_project(project_id: str, request: Dict, db: Session = Depends(get_db)):
+    """Update project status or details in database"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+
     if not project:
-        return {"error": "Project not found"}
+        raise HTTPException(status_code=404, detail="Project not found")
 
     # Update allowed fields
     if "status" in request:
-        project["status"] = request["status"]
-        if request["status"] == "in_progress" and not project.get("started_at"):
-            project["started_at"] = datetime.utcnow().isoformat()
-        elif request["status"] == "completed" and not project.get("completed_at"):
-            project["completed_at"] = datetime.utcnow().isoformat()
+        project.status = request["status"]
+        if request["status"] == "in_progress" and not project.started_at:
+            project.started_at = datetime.utcnow()
+        elif request["status"] == "completed" and not project.completed_at:
+            project.completed_at = datetime.utcnow()
 
     if "progress" in request:
-        project["progress"] = request["progress"]
+        project.progress = request["progress"]
 
     if "actual_cost" in request:
-        project["actual_cost"] = request["actual_cost"]
+        project.actual_cost = request["actual_cost"]
 
     if "files_generated" in request:
-        project["files_generated"] = request["files_generated"]
+        project.files_generated = request["files_generated"]
 
     if "lines_of_code" in request:
-        project["lines_of_code"] = request["lines_of_code"]
+        project.lines_of_code = request["lines_of_code"]
 
     if "error" in request:
-        if "errors" not in project:
-            project["errors"] = []
-        project["errors"].append({
+        # Parse existing errors
+        errors_list = json.loads(project.errors) if isinstance(project.errors, str) else project.errors or []
+        errors_list.append({
             "timestamp": datetime.utcnow().isoformat(),
             "error": request["error"]
         })
+        project.errors = json.dumps(errors_list)
 
     if "log" in request:
-        if "logs" not in project:
-            project["logs"] = []
-        project["logs"].append({
+        # Parse existing logs
+        logs_list = json.loads(project.logs) if isinstance(project.logs, str) else project.logs or []
+        logs_list.append({
             "timestamp": datetime.utcnow().isoformat(),
             "log": request["log"]
         })
+        project.logs = json.dumps(logs_list)
 
-    project["updated_at"] = datetime.utcnow().isoformat()
+    project.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(project)
 
     return {
         "project_id": project_id,
         "status": "updated",
-        "project": project
+        "project": project.to_dict()
     }
 
 @app.delete("/api/v1/projects/{project_id}")
-async def delete_project(project_id: str):
-    """Delete a project"""
-    if project_id not in projects_db:
-        return {"error": "Project not found"}
+async def delete_project(project_id: str, db: Session = Depends(get_db)):
+    """Delete a project from database"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
 
-    deleted_project = projects_db.pop(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project_name = project.name
+
+    db.delete(project)
+    db.commit()
 
     return {
         "project_id": project_id,
         "status": "deleted",
-        "message": f"Project '{deleted_project['name']}' deleted successfully"
+        "message": f"Project '{project_name}' deleted successfully"
     }
 
 @app.post("/api/v1/projects/{project_id}/start")
-async def start_project(project_id: str):
-    """Start project execution"""
-    project = projects_db.get(project_id)
-    if not project:
-        return {"error": "Project not found"}
+async def start_project(project_id: str, db: Session = Depends(get_db)):
+    """Start project execution in database"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
 
-    project["status"] = "in_progress"
-    project["started_at"] = datetime.utcnow().isoformat()
-    project["updated_at"] = datetime.utcnow().isoformat()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project.status = "in_progress"
+    project.started_at = datetime.utcnow()
+    project.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(project)
 
     return {
         "project_id": project_id,
@@ -1056,14 +1097,18 @@ async def start_project(project_id: str):
     }
 
 @app.post("/api/v1/projects/{project_id}/pause")
-async def pause_project(project_id: str):
-    """Pause project execution"""
-    project = projects_db.get(project_id)
-    if not project:
-        return {"error": "Project not found"}
+async def pause_project(project_id: str, db: Session = Depends(get_db)):
+    """Pause project execution in database"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
 
-    project["status"] = "paused"
-    project["updated_at"] = datetime.utcnow().isoformat()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project.status = "paused"
+    project.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(project)
 
     return {
         "project_id": project_id,
@@ -1072,14 +1117,18 @@ async def pause_project(project_id: str):
     }
 
 @app.post("/api/v1/projects/{project_id}/resume")
-async def resume_project(project_id: str):
-    """Resume project execution"""
-    project = projects_db.get(project_id)
-    if not project:
-        return {"error": "Project not found"}
+async def resume_project(project_id: str, db: Session = Depends(get_db)):
+    """Resume project execution in database"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
 
-    project["status"] = "in_progress"
-    project["updated_at"] = datetime.utcnow().isoformat()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project.status = "in_progress"
+    project.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(project)
 
     return {
         "project_id": project_id,
@@ -1114,29 +1163,30 @@ async def get_providers_usage():
 
 # Cost Alerts System
 @app.get("/api/v1/costs/alerts")
-async def get_cost_alerts():
-    """Get cost alerts and budget warnings"""
-    import random
-
+async def get_cost_alerts(db: Session = Depends(get_db)):
+    """Get cost alerts and budget warnings from database"""
     alerts = []
 
+    # Get all projects from database
+    projects = db.query(models.Project).all()
+
     # Check if any project exceeds budget
-    for project in projects_db.values():
-        if project.get("actual_cost", 0) > project.get("cost_estimate", 0) * 1.2:
+    for project in projects:
+        if project.actual_cost > project.cost_estimate * 1.2 and project.cost_estimate > 0:
             alerts.append({
                 "id": str(uuid.uuid4()),
                 "type": "budget_exceeded",
                 "severity": "high",
-                "project_id": project["id"],
-                "project_name": project["name"],
-                "message": f"Project budget exceeded by {((project['actual_cost'] / project['cost_estimate']) - 1) * 100:.1f}%",
-                "actual_cost": project["actual_cost"],
-                "estimated_cost": project.get("cost_estimate", 0),
+                "project_id": project.id,
+                "project_name": project.name,
+                "message": f"Project budget exceeded by {((project.actual_cost / project.cost_estimate) - 1) * 100:.1f}%",
+                "actual_cost": project.actual_cost,
+                "estimated_cost": project.cost_estimate,
                 "created_at": datetime.utcnow().isoformat()
             })
 
     # Weekly cost warning
-    total_cost = sum(p.get("actual_cost", 0) for p in projects_db.values())
+    total_cost = sum(p.actual_cost or 0 for p in projects)
     if total_cost > 50:
         alerts.append({
             "id": str(uuid.uuid4()),
@@ -1166,28 +1216,33 @@ async def dismiss_alert(alert_id: str):
 
 # Export Project Endpoint
 @app.get("/api/v1/projects/{project_id}/export")
-async def export_project(project_id: str):
-    """Export project as JSON (ready for ZIP generation)"""
+async def export_project(project_id: str, db: Session = Depends(get_db)):
+    """Export project as JSON (ready for ZIP generation) from database"""
     try:
-        project = projects_db.get(project_id)
+        project = db.query(models.Project).filter(models.Project.id == project_id).first()
         if not project:
-            return {"error": "Project not found"}
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        # Convert to dict
+        project_dict = project.to_dict()
 
         # Create serializable copy of project
-        project_copy = json.loads(json.dumps(project, default=str))
+        project_copy = json.loads(json.dumps(project_dict, default=str))
 
         export_data = {
             "project": project_copy,
             "exported_at": datetime.utcnow().isoformat(),
             "export_version": "1.0",
             "files": [
-                {"name": "README.md", "content": f"# {project['name']}\n\n{project.get('description', 'No description')}"},
+                {"name": "README.md", "content": f"# {project.name}\n\n{project.description or 'No description'}"},
                 {"name": "project.json", "content": json.dumps(project_copy, indent=2)},
-                {"name": "brief.md", "content": f"# Project Brief\n\n{json.dumps(project.get('brief', {}), indent=2)}"}
+                {"name": "brief.md", "content": f"# Project Brief\n\n{project.brief}"}
             ]
         }
 
         return export_data
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         return {
@@ -1200,7 +1255,7 @@ async def export_project(project_id: str):
 # ============================================================================
 
 @app.post("/api/v1/projects/{project_id}/execute")
-async def execute_project_code_generation(project_id: str):
+async def execute_project_code_generation(project_id: str, db: Session = Depends(get_db)):
     """
     🚀 Execute AI agent to generate actual code for the project
 
@@ -1214,14 +1269,19 @@ async def execute_project_code_generation(project_id: str):
     5. Save to filesystem
     """
     try:
-        project = projects_db.get(project_id)
+        project = db.query(models.Project).filter(models.Project.id == project_id).first()
         if not project:
-            return {"error": "Project not found"}
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        # Parse brief and config from JSON strings if needed
+        brief = json.loads(project.brief) if isinstance(project.brief, str) else project.brief
+        config = json.loads(project.config) if isinstance(project.config, str) else project.config
 
         # Update project status
-        project["status"] = "executing"
-        project["started_at"] = datetime.utcnow().isoformat()
-        project["updated_at"] = datetime.utcnow().isoformat()
+        project.status = "executing"
+        project.started_at = datetime.utcnow()
+        project.updated_at = datetime.utcnow()
+        db.commit()
 
         # Get executor
         executor = get_code_executor()
@@ -1229,21 +1289,24 @@ async def execute_project_code_generation(project_id: str):
         # Execute code generation
         result = await executor.execute_project(
             project_id,
-            project.get("brief", {}),
-            project.get("config", {})
+            brief or {},
+            config or {}
         )
 
         # Update project with results
-        project["status"] = "completed"
-        project["completed_at"] = datetime.utcnow().isoformat()
-        project["updated_at"] = datetime.utcnow().isoformat()
-        project["files_generated"] = result.get("files_generated", 0)
-        project["lines_of_code"] = result.get("lines_of_code", 0)
-        project["project_path"] = result.get("project_path", "")
+        project.status = "completed"
+        project.completed_at = datetime.utcnow()
+        project.updated_at = datetime.utcnow()
+        project.files_generated = result.get("files_generated", 0)
+        project.lines_of_code = result.get("lines_of_code", 0)
+        project.project_path = result.get("project_path", "")
 
         # Estimate cost (rough estimate)
         tokens_used = result.get("lines_of_code", 0) * 10  # ~10 tokens per line
-        project["actual_cost"] = round((tokens_used / 1000) * 0.002, 2)  # GPT-4 pricing
+        project.actual_cost = round((tokens_used / 1000) * 0.002, 2)  # GPT-4 pricing
+
+        db.commit()
+        db.refresh(project)
 
         return {
             "project_id": project_id,
@@ -1252,15 +1315,24 @@ async def execute_project_code_generation(project_id: str):
             "result": result
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         # Update project status to failed
-        if project_id in projects_db:
-            projects_db[project_id]["status"] = "failed"
-            projects_db[project_id]["updated_at"] = datetime.utcnow().isoformat()
-            projects_db[project_id]["errors"].append({
+        project = db.query(models.Project).filter(models.Project.id == project_id).first()
+        if project:
+            project.status = "failed"
+            project.updated_at = datetime.utcnow()
+
+            # Parse errors and append
+            errors_list = json.loads(project.errors) if isinstance(project.errors, str) else project.errors or []
+            errors_list.append({
                 "message": str(e),
                 "timestamp": datetime.utcnow().isoformat()
             })
+            project.errors = json.dumps(errors_list)
+
+            db.commit()
 
         import traceback
         return {
