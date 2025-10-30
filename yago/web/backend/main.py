@@ -580,11 +580,17 @@ async def reject_template(
 async def start_clarification(request: Dict, db: Session = Depends(get_db)):
     """Start a new clarification session with AI-generated questions in database"""
     session_id = str(uuid.uuid4())
-    project_idea = request.get("project_idea")
+    project_idea = request.get("project_idea", "")
+    project_type = request.get("project_type", "")
     depth = request.get("depth", "standard")
 
+    # Handle both project_idea and project_type parameters
+    if not project_idea and project_type:
+        project_idea = f"A {project_type} project"
+
     print(f"🚀 Starting AI clarification session: {session_id}")
-    print(f"   Project: {project_idea[:100]}...")
+    print(f"   Project: {project_idea[:100] if project_idea else 'No description'}...")
+    print(f"   Type: {project_type}")
     print(f"   Depth: {depth}")
 
     # Get AI service
