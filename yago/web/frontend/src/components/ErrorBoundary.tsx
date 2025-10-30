@@ -1,9 +1,11 @@
 /**
- * YAGO v8.0 - Error Boundary Component
+ * YAGO v8.3 - Error Boundary Component
  * Catches and displays React errors gracefully
+ * Now with automatic error logging to backend
  */
 
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { logError } from '../services/errorLogger';
 
 interface Props {
   children: ReactNode;
@@ -34,8 +36,15 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
 
-    // TODO: Send error to logging service (e.g., Sentry)
-    // reportErrorToService(error, errorInfo);
+    // Log error to backend
+    logError({
+      error,
+      context: {
+        componentStack: errorInfo.componentStack,
+        errorBoundary: true
+      },
+      severity: 'error'
+    });
   }
 
   handleReset = (): void => {
