@@ -1177,21 +1177,21 @@ async def check_providers_status():
 
 # Analytics endpoints
 @app.get("/api/v1/analytics")
-async def get_comprehensive_analytics(range: str = "30d", db: Session = Depends(get_db)):
+async def get_comprehensive_analytics(time_range: str = "30d", db: Session = Depends(get_db)):
     """
     Get comprehensive analytics with REAL database aggregation
 
     Supports query parameters:
-    - range: 7d, 30d, all (default: 30d)
+    - time_range: 7d, 30d, all (default: 30d)
     """
     from sqlalchemy import func, desc
     from datetime import timedelta
 
     # Calculate date range
     now = datetime.utcnow()
-    if range == "7d":
+    if time_range == "7d":
         start_date = now - timedelta(days=7)
-    elif range == "30d":
+    elif time_range == "30d":
         start_date = now - timedelta(days=30)
     else:  # "all"
         start_date = datetime(2020, 1, 1)  # Beginning of time
@@ -1256,7 +1256,7 @@ async def get_comprehensive_analytics(range: str = "30d", db: Session = Depends(
             strategy["success_rate"] = round((strategy["success_rate"] / strategy["count"]) * 100, 1)
 
     # Timeline data (last 30 days of activity)
-    timeline_days = 30 if range != "7d" else 7
+    timeline_days = 30 if time_range != "7d" else 7
     timeline = []
     for i in range(timeline_days):
         day_start = now - timedelta(days=timeline_days - i - 1)
