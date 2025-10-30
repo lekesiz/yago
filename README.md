@@ -157,6 +157,67 @@ PUT /api/v1/user-templates/{id}/reject - Reject template
 - Download count tracking
 - User attribution
 
+#### 5. 🐛 **Advanced Error Tracking System**
+**Feature:** Comprehensive error tracking with AI-powered auto-fix suggestions
+
+**Capabilities:**
+- Automatic error capture (frontend & backend)
+- Global error handlers (window.onerror, unhandledrejection)
+- React Error Boundary integration
+- Stack trace parsing and analysis
+- Session tracking for anonymous users
+- Error statistics and analytics
+- AI-powered fix suggestions with code examples
+- Self-healing error dashboard
+- Resolution tracking and workflow
+
+**Error Tracking Endpoints:**
+```
+POST /api/v1/errors/log - Log error (public, no auth)
+GET /api/v1/errors - Get errors with filters
+GET /api/v1/errors/stats - Get error statistics
+PUT /api/v1/errors/{id}/resolve - Mark error as resolved
+DELETE /api/v1/errors/cleanup - Delete old errors
+```
+
+**AI Auto-Fix Features:**
+- TypeError analysis → Optional chaining recommendations
+- Object rendering errors → safeRender() helper suggestions
+- ReferenceError → Import/variable fix suggestions
+- Network/CORS errors → Configuration fixes
+- Component errors → ErrorBoundary recommendations
+- Confidence levels (low/medium/high) for each suggestion
+- Code examples for implementation
+
+**Dashboard Features:**
+- Real-time error list with filters (source, severity, resolved)
+- Error statistics cards (total, frontend, backend, critical, unresolved)
+- Detailed error viewer with stack traces
+- Most common errors visualization
+- One-click error resolution
+- Progress tracking for fixes
+
+**Frontend Integration:**
+```typescript
+// errorLogger.ts - Centralized logging
+import { logError } from './services/errorLogger';
+
+// Automatically logs errors to backend
+logError({
+  error: new Error('Something went wrong'),
+  context: { component: 'UserProfile' },
+  severity: 'error'
+});
+
+// Global error handlers automatically initialized
+setupGlobalErrorHandlers();
+```
+
+**Components:**
+- `errorLogger.ts` - Error logging service (180 lines)
+- `ErrorLogsDashboard.tsx` - Self-healing dashboard (450+ lines)
+- `ErrorBoundary.tsx` - React error boundary with auto-logging
+
 ---
 
 ### 🏢 Enterprise Features (v8.2)
@@ -280,11 +341,14 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your API keys and database URL
 
-# Run migrations
+# Run database migrations
 alembic upgrade head
 
 # Start server
 python -m uvicorn main:app --reload --port 8000
+
+# Optional: Check migration status
+alembic current
 ```
 
 #### 3. Frontend Setup
@@ -527,6 +591,9 @@ POST /api/v1/enterprise/generate-docs
 - [x] Live progress tracking with logs
 - [x] User-submitted template CRUD operations
 - [x] Template approval/rejection workflow
+- [x] Advanced error tracking system with AI-powered auto-fix
+- [x] Self-healing error dashboard with resolution tracking
+- [x] Database migration system with Alembic
 
 ### 🎯 v8.4 (IN PROGRESS) - Collaboration & Integration
 - [ ] Team collaboration features (shared projects)
