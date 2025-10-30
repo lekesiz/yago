@@ -62,7 +62,7 @@ class ErrorLoggingService:
         """
         # Convert dicts to JSON strings for SQLite compatibility
         request_data_str = json.dumps(request_data) if request_data else None
-        error_metadata_str = json.dumps(error_metadata) if metadata else None
+        error_metadata_str = json.dumps(error_metadata) if error_metadata else None
 
         error_log = models.ErrorLog(
             error_type=error_type,

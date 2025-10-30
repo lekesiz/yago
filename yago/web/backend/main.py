@@ -2316,16 +2316,15 @@ class ErrorLogCreate(BaseModel):
 async def log_error(
     error_data: ErrorLogCreate,
     request: Request,
-    db: Session = Depends(get_db),
-    current_user: Optional[models.User] = None
+    db: Session = Depends(get_db)
 ):
     """
     Log an error from frontend or backend
     Public endpoint - no authentication required for error logging
     """
     try:
-        # Get user_id if user is authenticated (optional)
-        user_id = current_user.id if current_user else None
+        # Public endpoint - no user authentication
+        user_id = None
 
         # Log the error
         error_log = ErrorLoggingService.log_error(
