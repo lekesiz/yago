@@ -61,6 +61,14 @@ interface DocumentationResult {
 }
 
 export const EnterpriseDashboard: React.FC = () => {
+  // Helper function to safely render any value
+  const safeRender = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    return JSON.stringify(value);
+  };
+
   // State for Git Analysis
   const [gitUrl, setGitUrl] = useState('');
   const [gitLoading, setGitLoading] = useState(false);
@@ -313,7 +321,7 @@ export const EnterpriseDashboard: React.FC = () => {
                     {gitResult.recommendations?.map((rec, idx) => (
                       <li key={idx} className="text-gray-400 text-xs flex items-start">
                         <span className="text-green-400 mr-2">•</span>
-                        <span>{rec}</span>
+                        <span>{safeRender(rec)}</span>
                       </li>
                     ))}
                   </ul>
@@ -507,7 +515,7 @@ export const EnterpriseDashboard: React.FC = () => {
                       {complianceResult.missing_implementations?.map((item, idx) => (
                         <div key={idx} className="text-red-400 text-xs flex items-start bg-red-900/10 p-2 rounded">
                           <span className="mr-2">⚠</span>
-                          <span>{item}</span>
+                          <span>{safeRender(item)}</span>
                         </div>
                       ))}
                     </div>
@@ -522,7 +530,7 @@ export const EnterpriseDashboard: React.FC = () => {
                       {complianceResult.undocumented_features?.map((item, idx) => (
                         <div key={idx} className="text-yellow-400 text-xs flex items-start bg-yellow-900/10 p-2 rounded">
                           <span className="mr-2">📝</span>
-                          <span>{item}</span>
+                          <span>{safeRender(item)}</span>
                         </div>
                       ))}
                     </div>
@@ -593,7 +601,7 @@ export const EnterpriseDashboard: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     {docsResult.documentation_types?.map((type, idx) => (
                       <span key={idx} className="px-3 py-1 bg-orange-600/20 text-orange-300 text-xs rounded-full border border-orange-500/30">
-                        {type}
+                        {safeRender(type)}
                       </span>
                     ))}
                   </div>
