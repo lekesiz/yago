@@ -1,12 +1,14 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr
 import uvicorn
 import uuid
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 
@@ -40,6 +42,13 @@ try:
 except ImportError:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'services'))
     from websocket_manager import manager as ws_manager
+
+# Import Auth service
+try:
+    from .services.auth_service import AuthService, get_current_user, get_current_active_user
+except ImportError:
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'services'))
+    from auth_service import AuthService, get_current_user, get_current_active_user
 
 app = FastAPI(
     title="YAGO v8.0 API",
@@ -167,6 +176,125 @@ async def websocket_project_updates(websocket: WebSocket, project_id: str):
 async def get_websocket_stats():
     """Get WebSocket connection statistics"""
     return ws_manager.get_stats()
+
+# Pydantic models for authentication
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    full_name: Optional[str]
+    is_active: bool
+    is_verified: bool
+    created_at: Optional[str]
+    last_login: Optional[str]
+
+# Authentication endpoints
+@app.post("/api/v1/auth/register", response_model=dict)
+async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    """Register a new user"""
+    try:
+        user = AuthService.create_user(
+            db=db,
+            email=user_data.email,
+            password=user_data.password,
+            full_name=user_data.full_name
+        )
+
+        # Create access token
+        access_token = AuthService.create_access_token(data={"sub": user.id})
+
+        return {
+            "message": "User registered successfully",
+            "user": user.to_dict(),
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+
+@app.post("/api/v1/auth/login", response_model=Token)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Login with email and password"""
+    user = AuthService.authenticate_user(db, form_data.username, form_data.password)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Update last login
+    AuthService.update_last_login(db, user.id)
+
+    # Create access token
+    access_token = AuthService.create_access_token(
+        data={"sub": user.id},
+        expires_delta=timedelta(days=7)
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.post("/api/v1/auth/login-json")
+async def login_json(user_data: UserLogin, db: Session = Depends(get_db)):
+    """Login with JSON body (alternative to form data)"""
+    user = AuthService.authenticate_user(db, user_data.email, user_data.password)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+
+    # Update last login
+    AuthService.update_last_login(db, user.id)
+
+    # Create access token
+    access_token = AuthService.create_access_token(
+        data={"sub": user.id},
+        expires_delta=timedelta(days=7)
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user.to_dict()
+    }
+
+@app.get("/api/v1/auth/me", response_model=UserResponse)
+async def get_current_user_info(
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get current authenticated user info"""
+    return UserResponse(**current_user.to_dict())
+
+@app.post("/api/v1/auth/refresh")
+async def refresh_token(current_user: models.User = Depends(get_current_user)):
+    """Refresh access token"""
+    access_token = AuthService.create_access_token(
+        data={"sub": current_user.id},
+        expires_delta=timedelta(days=7)
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 
 # Template endpoints
 @app.get("/api/v1/templates/")

@@ -13,10 +13,14 @@ import { AnalyticsTab } from './components/AnalyticsTab';
 import { MarketplaceTab } from './components/MarketplaceTab';
 import { ProjectsTab } from './components/ProjectsTab';
 import { EnterpriseDashboard } from './components/EnterpriseDashboard';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthModal } from './components/AuthModal';
 import './i18n/config';
 import './index.css';
 
 const App: React.FC = () => {
+  const { user, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [backendStatus, setBackendStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
   const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace' | 'enterprise'>('overview');
 
@@ -62,6 +66,27 @@ const App: React.FC = () => {
               >
                 API Docs
               </a>
+
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <div className="text-sm text-gray-300">
+                    👤 {user.full_name || user.email}
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition"
+                >
+                  🔐 Login
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -139,6 +164,16 @@ const App: React.FC = () => {
           },
         }}
       />
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={(user, token) => {
+            setShowAuthModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };
