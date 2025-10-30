@@ -1,8 +1,8 @@
-# 🚀 YAGO v8.2 - Yet Another Genius Orchestrator
+# 🚀 YAGO v8.3 - Yet Another Genius Orchestrator
 
 **Enterprise-Grade AI Code Generation & Project Management Platform**
 
-[![Version](https://img.shields.io/badge/version-8.2.0-blue.svg)](https://github.com/lekesiz/yago)
+[![Version](https://img.shields.io/badge/version-8.3.0-blue.svg)](https://github.com/lekesiz/yago)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![React](https://img.shields.io/badge/react-18.2+-blue.svg)](https://reactjs.org/)
@@ -13,12 +13,16 @@
 
 ## 🌟 What Makes YAGO Different?
 
-While other tools focus on writing new code, **YAGO v8.2 solves the problems developers actually face**:
+While other tools focus on writing new code, **YAGO v8.3 solves the problems developers actually face**:
 
 - 🔍 **Complete unfinished projects** from Git repositories
-- ♻️ **Clean up messy legacy code** automatically  
+- ♻️ **Clean up messy legacy code** automatically
 - 📋 **Verify code matches technical specs**
 - 📚 **Generate documentation** from existing code
+- 🔐 **Secure authentication** with JWT and user management
+- 🎯 **Real-time progress updates** via WebSocket
+- 👁️ **Preview generated code** directly in browser
+- 🛒 **User-submitted templates** in enhanced marketplace
 
 **80% of development time is spent on existing code, not new code. YAGO addresses this reality.**
 
@@ -55,7 +59,107 @@ While other tools focus on writing new code, **YAGO v8.2 solves the problems dev
 
 ---
 
-### 🏢 Enterprise Features (NEW in v8.2)
+### 🚀 Real-time Features (NEW in v8.3)
+
+#### 1. 👁️ **Code Preview in Browser**
+**Feature:** View generated code with syntax highlighting before downloading
+
+**Capabilities:**
+- Interactive file tree with folder hierarchy
+- Syntax highlighting for 15+ languages (Python, JavaScript, TypeScript, etc.)
+- Line numbers and file metadata (size, type)
+- Expandable/collapsible folder structure
+- Quick file navigation
+
+**Component:** `CodePreview.tsx` with Monaco Editor integration
+
+#### 2. 🎯 **Real-time Progress Tracking**
+**Feature:** Watch AI code generation happen live via WebSocket
+
+**Features:**
+- Live progress bar (0-100%)
+- Real-time activity log with timestamps
+- Connection status indicator
+- Auto-reconnect on disconnect
+- Completion statistics (files, LOC, cost)
+- Error notifications
+
+**Implementation:**
+- Backend: WebSocket manager (`websocket_manager.py`)
+- Frontend: Custom React hook (`useWebSocket.ts`)
+- Component: `RealtimeProgress.tsx`
+
+**Message Types:**
+```typescript
+- connection: Connection established
+- progress: Progress update (%, status, message)
+- log: Activity log entry
+- error: Error notification
+- completion: Project completion with stats
+- clarification: AI needs user input
+- file_created: New file notification
+```
+
+#### 3. 🔐 **User Authentication System**
+**Feature:** Secure JWT-based authentication with user management
+
+**Capabilities:**
+- User registration with email/password
+- Secure login with JWT tokens (7-day expiration)
+- Password hashing with bcrypt
+- Token-based API authentication
+- User profile management
+- Account activation/deactivation
+
+**Endpoints:**
+```
+POST /api/v1/auth/register - Register new user
+POST /api/v1/auth/login - Login and get JWT token
+GET /api/v1/auth/me - Get current user profile
+PUT /api/v1/auth/me - Update user profile
+DELETE /api/v1/auth/me - Delete account
+```
+
+**Security Features:**
+- Bcrypt password hashing (12 rounds)
+- JWT tokens with HS256 algorithm
+- Protected routes with authentication middleware
+- Token refresh mechanism
+
+#### 4. 🛒 **Enhanced Template Marketplace**
+**Feature:** User-submitted templates with approval workflow
+
+**User Actions:**
+```
+POST /api/v1/user-templates/submit - Submit new template
+GET /api/v1/user-templates/my - View my templates
+GET /api/v1/user-templates/{id} - Get template details
+PUT /api/v1/user-templates/{id} - Update template
+DELETE /api/v1/user-templates/{id} - Delete template
+```
+
+**Admin Actions:**
+```
+GET /api/v1/user-templates/pending - View pending approvals
+PUT /api/v1/user-templates/{id}/approve - Approve template
+PUT /api/v1/user-templates/{id}/reject - Reject template
+```
+
+**Template Status Workflow:**
+1. `pending` - Submitted, awaiting review
+2. `approved` - Visible in marketplace
+3. `rejected` - Not visible, with rejection reason
+
+**Template Metadata:**
+- Name, description, category
+- Tags for searchability
+- Rating system (1-5 stars)
+- Download count tracking
+- User attribution
+
+---
+
+### 🏢 Enterprise Features (v8.2)
 
 #### 1. 🔍 **Git Project Analysis**
 **Problem:** "I inherited a half-finished project. What needs to be done?"
@@ -414,14 +518,23 @@ POST /api/v1/enterprise/generate-docs
 - [x] Basic Analytics Dashboard
 - [x] Template Marketplace (12+ templates)
 
-### 🎯 v8.3 (IN PROGRESS) - Advanced Features
-- [ ] Code preview in browser (live preview)
-- [ ] Enhanced template marketplace (user submissions)
-- [ ] User authentication & authorization (JWT/OAuth)
-- [ ] Team collaboration features
-- [ ] Real-time progress updates (WebSocket)
-- [ ] Custom template creation UI
-- [ ] Webhook integrations
+### ✅ v8.3 (COMPLETED) - Advanced Features
+- [x] Code preview in browser with syntax highlighting
+- [x] Enhanced template marketplace with user submissions
+- [x] User authentication & authorization (JWT)
+- [x] Real-time progress updates via WebSocket
+- [x] Interactive code file tree viewer
+- [x] Live progress tracking with logs
+- [x] User-submitted template CRUD operations
+- [x] Template approval/rejection workflow
+
+### 🎯 v8.4 (IN PROGRESS) - Collaboration & Integration
+- [ ] Team collaboration features (shared projects)
+- [ ] Real-time collaborative editing
+- [ ] Project comments and discussions
+- [ ] Webhook integrations (GitHub, Slack, Discord)
+- [ ] Advanced role-based access control (RBAC)
+- [ ] Project version history and rollback
 
 ### 🚀 v9.0 (PLANNED) - Enterprise Scale
 - [ ] Multi-tenancy support
@@ -487,10 +600,10 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 **Built with ❤️ by developers, for developers**
 
-**YAGO v8.2** - Solving real-world problems, not just writing code.
+**YAGO v8.3** - Solving real-world problems, not just writing code.
 
 ---
 
-*Last Updated: October 30, 2025*  
-*Version: 8.2.0*  
+*Last Updated: October 30, 2025*
+*Version: 8.3.0*
 *Status: Production Ready ✅*
