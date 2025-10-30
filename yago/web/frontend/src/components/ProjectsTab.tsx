@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { CodePreview } from './CodePreview';
 
 interface Project {
   id: string;
@@ -54,6 +55,7 @@ export const ProjectsTab: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewProject, setPreviewProject] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -334,13 +336,22 @@ export const ProjectsTab: React.FC = () => {
                   </button>
 
                   {project.status === 'completed' && (
-                    <button
-                      onClick={() => downloadProjectZip(project.id, project.name)}
-                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-lg transition"
-                      title="Download project as ZIP"
-                    >
-                      📦 Download
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setPreviewProject({ id: project.id, name: project.name })}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition"
+                        title="Preview code in browser"
+                      >
+                        👁️ Preview
+                      </button>
+                      <button
+                        onClick={() => downloadProjectZip(project.id, project.name)}
+                        className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm rounded-lg transition"
+                        title="Download project as ZIP"
+                      >
+                        📦 Download
+                      </button>
+                    </>
                   )}
 
                   {project.status === 'creating' && (
@@ -524,12 +535,23 @@ export const ProjectsTab: React.FC = () => {
                           {selectedProject.project_path}
                         </div>
                       </div>
-                      <button
-                        onClick={() => downloadProjectZip(selectedProject.id, selectedProject.name)}
-                        className="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
-                      >
-                        📦 Download Project as ZIP
-                      </button>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => {
+                            setPreviewProject({ id: selectedProject.id, name: selectedProject.name });
+                            setSelectedProject(null);
+                          }}
+                          className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
+                        >
+                          👁️ Preview Code
+                        </button>
+                        <button
+                          onClick={() => downloadProjectZip(selectedProject.id, selectedProject.name)}
+                          className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
+                        >
+                          📦 Download ZIP
+                        </button>
+                      </div>
                       <div className="text-xs text-gray-400 text-center">
                         {selectedProject.files_generated} files • {selectedProject.lines_of_code} lines of code
                       </div>
@@ -569,6 +591,17 @@ export const ProjectsTab: React.FC = () => {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Code Preview Modal */}
+      <AnimatePresence>
+        {previewProject && (
+          <CodePreview
+            projectId={previewProject.id}
+            projectName={previewProject.name}
+            onClose={() => setPreviewProject(null)}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -1560,7 +1560,7 @@ async def execute_project_code_generation(project_id: str, db: Session = Depends
 
 @app.get("/api/v1/projects/{project_id}/files")
 async def list_project_files(project_id: str, db: Session = Depends(get_db)):
-    """Get list of generated files for a project"""
+    """Get list of generated files for a project as a tree structure"""
     project = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -1576,21 +1576,62 @@ async def list_project_files(project_id: str, db: Session = Depends(get_db)):
         if not path.exists():
             return {"files": [], "message": "Project directory not found"}
 
-        files = []
-        for file in path.rglob("*"):
-            if file.is_file():
-                relative_path = file.relative_to(path)
-                files.append({
-                    "path": str(relative_path),
-                    "size": file.stat().st_size,
-                    "modified": datetime.fromtimestamp(file.stat().st_mtime).isoformat()
-                })
+        def build_tree(directory: Path, base_path: Path) -> list:
+            """Build a hierarchical tree structure of files and directories"""
+            tree = []
+
+            try:
+                items = sorted(directory.iterdir(), key=lambda x: (not x.is_dir(), x.name))
+
+                for item in items:
+                    # Skip hidden files and __pycache__
+                    if item.name.startswith('.') or item.name == '__pycache__':
+                        continue
+
+                    relative_path = item.relative_to(base_path)
+
+                    if item.is_dir():
+                        node = {
+                            "name": item.name,
+                            "path": str(relative_path),
+                            "type": "directory",
+                            "children": build_tree(item, base_path)
+                        }
+                        tree.append(node)
+                    else:
+                        node = {
+                            "name": item.name,
+                            "path": str(relative_path),
+                            "type": "file",
+                            "size": item.stat().st_size,
+                            "extension": item.suffix.lstrip('.') if item.suffix else None
+                        }
+                        tree.append(node)
+
+            except PermissionError:
+                pass
+
+            return tree
+
+        file_tree = build_tree(path, path)
+
+        # Count total files
+        def count_files(tree):
+            count = 0
+            for node in tree:
+                if node["type"] == "file":
+                    count += 1
+                elif node["type"] == "directory" and "children" in node:
+                    count += count_files(node["children"])
+            return count
+
+        total_files = count_files(file_tree)
 
         return {
             "project_id": project_id,
             "project_path": str(path.absolute()),
-            "files": files,
-            "total_files": len(files)
+            "files": file_tree,
+            "total_files": total_files
         }
 
     except Exception as e:
@@ -1621,10 +1662,34 @@ async def get_project_file(project_id: str, file_path: str, db: Session = Depend
         with open(full_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
+        # Detect language from file extension
+        ext = full_path.suffix.lstrip('.').lower()
+        lang_map = {
+            'py': 'python',
+            'js': 'javascript',
+            'ts': 'typescript',
+            'tsx': 'typescript',
+            'jsx': 'javascript',
+            'json': 'json',
+            'md': 'markdown',
+            'css': 'css',
+            'html': 'html',
+            'yaml': 'yaml',
+            'yml': 'yaml',
+            'toml': 'toml',
+            'sh': 'bash',
+            'sql': 'sql',
+            'go': 'go',
+            'rs': 'rust',
+            'java': 'java',
+        }
+        language = lang_map.get(ext, 'plaintext')
+
         return {
             "project_id": project_id,
-            "file_path": file_path,
+            "path": file_path,
             "content": content,
+            "language": language,
             "size": len(content),
             "lines": len(content.split('\n'))
         }
