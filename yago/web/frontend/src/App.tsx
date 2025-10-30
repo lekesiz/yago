@@ -187,14 +187,23 @@ const App: React.FC = () => {
 
 // Overview Tab Component
 const OverviewTab: React.FC = () => {
+  const [stats, setStats] = React.useState({ projects: 0, models: 10, endpoints: 73 });
+
+  React.useEffect(() => {
+    fetch('http://localhost:8000/api/v1/projects')
+      .then(res => res.json())
+      .then(data => setStats(prev => ({ ...prev, projects: data.projects?.length || 0 })))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'AI Models', value: '10', icon: '🤖', color: 'from-blue-500 to-cyan-500' },
-          { label: 'Active Features', value: '5', icon: '✨', color: 'from-purple-500 to-pink-500' },
-          { label: 'API Endpoints', value: '73', icon: '🔌', color: 'from-green-500 to-emerald-500' },
+          { label: 'AI Models', value: String(stats.models), icon: '🤖', color: 'from-blue-500 to-cyan-500' },
+          { label: 'Total Projects', value: String(stats.projects), icon: '📦', color: 'from-purple-500 to-pink-500' },
+          { label: 'API Endpoints', value: String(stats.endpoints), icon: '🔌', color: 'from-green-500 to-emerald-500' },
           { label: 'Status', value: 'Ready', icon: '✅', color: 'from-orange-500 to-red-500' },
         ].map((stat, idx) => (
           <div
