@@ -12,12 +12,13 @@ import { AIModelsTab } from './components/AIModelsTab';
 import { AnalyticsTab } from './components/AnalyticsTab';
 import { MarketplaceTab } from './components/MarketplaceTab';
 import { ProjectsTab } from './components/ProjectsTab';
+import { EnterpriseDashboard } from './components/EnterpriseDashboard';
 import './i18n/config';
 import './index.css';
 
 const App: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
-  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace' | 'enterprise'>('overview');
 
   useEffect(() => {
     // Check backend health
@@ -81,6 +82,7 @@ const App: React.FC = () => {
             { id: 'models', label: '🤖 AI Models' },
             { id: 'analytics', label: '📈 Analytics' },
             { id: 'marketplace', label: '🛒 Marketplace' },
+            { id: 'enterprise', label: '🏢 Enterprise' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -107,6 +109,7 @@ const App: React.FC = () => {
             {activeTab === 'models' && <AIModelsTab />}
             {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'marketplace' && <MarketplaceTab />}
+            {activeTab === 'enterprise' && <EnterpriseDashboard />}
           </Suspense>
         </ErrorBoundary>
       </main>

@@ -1687,5 +1687,134 @@ async def download_project_zip(project_id: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create ZIP: {str(e)}")
 
+# ============================================================================
+# ENTERPRISE FEATURES - Git Analysis, Refactoring, Documentation
+# ============================================================================
+
+# Import enterprise services
+try:
+    from .services.git_analyzer import GitProjectAnalyzer
+    from .services.code_refactor import CodeRefactorService
+    from .services.doc_compliance import DocComplianceService
+    from .services.doc_generator import DocGeneratorService
+except ImportError:
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from services.git_analyzer import GitProjectAnalyzer
+    from services.code_refactor import CodeRefactorService
+    from services.doc_compliance import DocComplianceService
+    from services.doc_generator import DocGeneratorService
+
+@app.post("/api/v1/enterprise/analyze-git")
+async def analyze_git_project(request: Dict):
+    """Analyze a Git repository for completion opportunities"""
+    git_url = request.get("git_url")
+    if not git_url:
+        raise HTTPException(status_code=400, detail="git_url is required")
+
+    analyzer = GitProjectAnalyzer()
+    try:
+        report = analyzer.generate_completion_report(git_url)
+        return report
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+    finally:
+        analyzer.cleanup()
+
+@app.post("/api/v1/enterprise/refactor-project")
+async def refactor_project(request: Dict):
+    """Analyze project for refactoring opportunities"""
+    project_path = request.get("project_path")
+    if not project_path:
+        raise HTTPException(status_code=400, detail="project_path is required")
+
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="Project path not found")
+
+    refactor = CodeRefactorService(project_path)
+    try:
+        report = refactor.analyze_project()
+        return report
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Refactoring analysis failed: {str(e)}")
+
+@app.post("/api/v1/enterprise/check-compliance")
+async def check_documentation_compliance(request: Dict):
+    """Check if code matches technical documentation"""
+    project_path = request.get("project_path")
+    docs_path = request.get("docs_path")
+
+    if not project_path:
+        raise HTTPException(status_code=400, detail="project_path is required")
+
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="Project path not found")
+
+    compliance = DocComplianceService(project_path, docs_path)
+    try:
+        report = compliance.analyze_compliance()
+        return report
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Compliance check failed: {str(e)}")
+
+@app.post("/api/v1/enterprise/generate-docs")
+async def generate_documentation(request: Dict):
+    """Auto-generate documentation from code"""
+    project_path = request.get("project_path")
+    if not project_path:
+        raise HTTPException(status_code=400, detail="project_path is required")
+
+    if not os.path.exists(project_path):
+        raise HTTPException(status_code=404, detail="Project path not found")
+
+    doc_gen = DocGeneratorService(project_path)
+    try:
+        result = doc_gen.generate_all_documentation()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Documentation generation failed: {str(e)}")
+
+@app.get("/api/v1/enterprise/features")
+async def list_enterprise_features():
+    """List all available enterprise features"""
+    return {
+        "features": [
+            {
+                "id": "git_analysis",
+                "name": "Git Project Analysis",
+                "description": "Analyze existing Git projects to find TODOs, incomplete features, and improvement opportunities",
+                "endpoint": "/api/v1/enterprise/analyze-git",
+                "method": "POST",
+                "parameters": ["git_url"]
+            },
+            {
+                "id": "code_refactor",
+                "name": "Code Refactoring",
+                "description": "Detect dead code, duplicates, complexity issues, and get modernization suggestions",
+                "endpoint": "/api/v1/enterprise/refactor-project",
+                "method": "POST",
+                "parameters": ["project_path"]
+            },
+            {
+                "id": "doc_compliance",
+                "name": "Documentation Compliance",
+                "description": "Check if code implementation matches technical documentation",
+                "endpoint": "/api/v1/enterprise/check-compliance",
+                "method": "POST",
+                "parameters": ["project_path", "docs_path"]
+            },
+            {
+                "id": "auto_docs",
+                "name": "Auto Documentation",
+                "description": "Generate comprehensive documentation from code automatically",
+                "endpoint": "/api/v1/enterprise/generate-docs",
+                "method": "POST",
+                "parameters": ["project_path"]
+            }
+        ],
+        "total_features": 4,
+        "version": "8.2.0"
+    }
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
