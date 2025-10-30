@@ -327,3 +327,91 @@ class User(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "last_login": self.last_login.isoformat() if self.last_login else None,
         }
+
+
+class Template(Base):
+    """User-submitted templates for marketplace"""
+    __tablename__ = "templates"
+
+    # Primary key
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    # Basic info
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    category = Column(String(50), nullable=False)  # web, mobile, backend, data-science, etc.
+    difficulty = Column(String(20), default="intermediate")  # beginner, intermediate, advanced
+    icon = Column(String(10), default="📦")
+
+    # Tags and metadata
+    tags = Column(JSONB if IS_POSTGRESQL else Text)  # ["react", "typescript", "api"]
+    estimated_time = Column(String(50))  # "1-2 weeks"
+    estimated_cost = Column(Float, default=0.0)
+
+    # Template content
+    template_data = Column(JSONB if IS_POSTGRESQL else Text, nullable=False)  # Template YAML/JSON
+
+    # Status and moderation
+    status = Column(String(20), default="pending")  # pending, approved, rejected
+    is_featured = Column(Boolean, default=False)
+    is_published = Column(Boolean, default=False)
+
+    # Stats
+    downloads = Column(Integer, default=0)
+    rating = Column(Float, default=0.0)
+    review_count = Column(Integer, default=0)
+
+    # Timestamps
+    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
+    published_at = Column(TIMESTAMP)
+
+    # Constraints
+    __table_args__ = (
+        Index('idx_templates_user_id', 'user_id'),
+        Index('idx_templates_category', 'category'),
+        Index('idx_templates_status', 'status'),
+        Index('idx_templates_created_at', 'created_at'),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary"""
+        # Parse tags if stored as string
+        tags = self.tags
+        if isinstance(tags, str):
+            try:
+                tags = json.loads(tags)
+            except:
+                tags = []
+
+        # Parse template_data if stored as string
+        template_data = self.template_data
+        if isinstance(template_data, str):
+            try:
+                template_data = json.loads(template_data)
+            except:
+                template_data = {}
+
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "name": self.name,
+            "description": self.description,
+            "category": self.category,
+            "difficulty": self.difficulty,
+            "icon": self.icon,
+            "tags": tags or [],
+            "estimated_time": self.estimated_time,
+            "estimated_cost": self.estimated_cost,
+            "template_data": template_data,
+            "status": self.status,
+            "is_featured": self.is_featured,
+            "is_published": self.is_published,
+            "downloads": self.downloads,
+            "rating": self.rating,
+            "review_count": self.review_count,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "published_at": self.published_at.isoformat() if self.published_at else None,
+        }
