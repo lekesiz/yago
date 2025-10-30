@@ -407,10 +407,10 @@ export const EnterpriseDashboard: React.FC = () => {
                           }`}>
                             {item.priority}
                           </span>
-                          <span className="text-gray-500 text-xs">{item.file}</span>
+                          <span className="text-gray-500 text-xs">{typeof item.file === 'string' ? item.file : JSON.stringify(item.file)}</span>
                         </div>
-                        <div className="text-white text-sm mb-1">{item.issue}</div>
-                        <div className="text-gray-400 text-xs">{item.suggestion}</div>
+                        <div className="text-white text-sm mb-1">{typeof item.issue === 'string' ? item.issue : JSON.stringify(item.issue)}</div>
+                        <div className="text-gray-400 text-xs">{typeof item.suggestion === 'string' ? item.suggestion : JSON.stringify(item.suggestion)}</div>
                       </div>
                     ))}
                   </div>
