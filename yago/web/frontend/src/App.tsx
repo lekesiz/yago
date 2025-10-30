@@ -3,19 +3,17 @@
  * Modern dashboard showcasing all v8.0 features + Interactive Project Creation
  */
 
-import React, { useState, useEffect, Suspense, lazy, memo } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ClarificationFlow } from './components/ClarificationFlow';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { AIModelsTab } from './components/AIModelsTab';
+import { AnalyticsTab } from './components/AnalyticsTab';
+import { MarketplaceTab } from './components/MarketplaceTab';
+import { ProjectsTab } from './components/ProjectsTab';
 import './i18n/config';
 import './index.css';
-
-// Code Splitting - Lazy load heavy components
-const ClarificationFlow = lazy(() => import('./components/ClarificationFlow'));
-const AIModelsTab = lazy(() => import('./components/AIModelsTab'));
-const AnalyticsTab = lazy(() => import('./components/AnalyticsTab'));
-const MarketplaceTab = lazy(() => import('./components/MarketplaceTab'));
-const ProjectsTab = lazy(() => import('./components/ProjectsTab'));
 
 const App: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
@@ -102,14 +100,7 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ErrorBoundary>
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-                <p className="text-white text-sm">Loading...</p>
-              </div>
-            </div>
-          }>
+          <Suspense fallback={<div className="text-white text-center">Loading...</div>}>
             {activeTab === 'overview' && <OverviewTab />}
             {activeTab === 'create' && <ClarificationFlow />}
             {activeTab === 'projects' && <ProjectsTab />}
@@ -149,8 +140,8 @@ const App: React.FC = () => {
   );
 };
 
-// Overview Tab Component - Memoized for performance
-const OverviewTab: React.FC = memo(() => {
+// Overview Tab Component
+const OverviewTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Hero Stats */}
@@ -258,7 +249,7 @@ const OverviewTab: React.FC = memo(() => {
       </div>
     </div>
   );
-});
+};
 
 // All tab components are now imported from separate files:
 // - AIModelsTab from './components/AIModelsTab'
