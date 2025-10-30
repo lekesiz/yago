@@ -21,6 +21,7 @@ type FlowStage = 'start' | 'clarifying' | 'completed' | 'agent-selection' | 'pro
 export const ClarificationFlow: React.FC = () => {
   const [stage, setStage] = useState<FlowStage>('start');
   const [completionBrief, setCompletionBrief] = useState<any>(null);
+  const [createdProjectInfo, setCreatedProjectInfo] = useState<any>(null);
 
   const {
     sessionId,
@@ -211,8 +212,26 @@ export const ClarificationFlow: React.FC = () => {
       });
 
       console.log('Project created:', response.data);
-      toast.success(`🎉 Project created successfully! ID: ${response.data.project_id.slice(0, 8)}...`);
+      const projectId = response.data.project_id;
+      const projectName = response.data.project?.name || completionBrief?.project_idea || 'Your Project';
+
+      // Store project info for success screen
+      setCreatedProjectInfo({
+        id: projectId,
+        name: projectName,
+        ...response.data.project
+      });
+
+      toast.success(`🎉 Project "${projectName}" created successfully!`);
       setStage('project-created');
+
+      // Automatically redirect to projects page after 3 seconds
+      setTimeout(() => {
+        toast.info('Redirecting to Projects page...', { duration: 2000 });
+        setTimeout(() => {
+          window.location.href = '/?tab=projects';
+        }, 2000);
+      }, 3000);
     } catch (error) {
       console.error('Failed to create project:', error);
       toast.error('Failed to create project. Please try again.');
@@ -377,26 +396,41 @@ export const ClarificationFlow: React.FC = () => {
               transition={{ duration: 0.5 }}
               className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800"
             >
-              <div className="text-center p-8">
+              <div className="text-center p-8 max-w-2xl">
                 <div className="text-8xl mb-6">🎉</div>
                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  Project Created!
+                  Project Created Successfully!
                 </h1>
+                {createdProjectInfo && (
+                  <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                    <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-3">
+                      {createdProjectInfo.name}
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                      Project ID: {createdProjectInfo.id?.slice(0, 12)}...
+                    </p>
+                    <p className="text-lg text-gray-600 dark:text-gray-300">
+                      Status: <span className="font-semibold text-green-600 dark:text-green-400">
+                        {createdProjectInfo.status || 'Creating'}
+                      </span>
+                    </p>
+                  </div>
+                )}
                 <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-                  Your AI agents are ready to start building.
+                  🚀 Redirecting you to Projects page in a moment...
                 </p>
-                <div className="flex gap-4 justify-center">
+                <div className="flex gap-4 justify-center flex-wrap">
+                  <button
+                    onClick={() => window.location.href = '/?tab=projects'}
+                    className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition shadow-lg"
+                  >
+                    📊 View Projects Now
+                  </button>
                   <button
                     onClick={handleStartNew}
                     className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
                   >
                     ✨ Create Another Project
-                  </button>
-                  <button
-                    onClick={() => setStage('start')}
-                    className="px-8 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition"
-                  >
-                    🏠 Back to Dashboard
                   </button>
                 </div>
               </div>
