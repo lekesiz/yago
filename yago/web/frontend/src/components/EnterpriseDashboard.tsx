@@ -409,16 +409,16 @@ export const EnterpriseDashboard: React.FC = () => {
                       <div key={idx} className="bg-white/5 rounded p-3 border-l-4 border-purple-500">
                         <div className="flex items-center justify-between mb-1">
                           <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                            item.priority === 'HIGH' ? 'bg-red-600 text-white' :
-                            item.priority === 'MEDIUM' ? 'bg-yellow-600 text-white' :
+                            safeRender(item.priority) === 'HIGH' ? 'bg-red-600 text-white' :
+                            safeRender(item.priority) === 'MEDIUM' ? 'bg-yellow-600 text-white' :
                             'bg-green-600 text-white'
                           }`}>
-                            {item.priority}
+                            {safeRender(item.priority)}
                           </span>
-                          <span className="text-gray-500 text-xs">{typeof item.file === 'string' ? item.file : JSON.stringify(item.file)}</span>
+                          <span className="text-gray-500 text-xs">{safeRender(item.file)}</span>
                         </div>
-                        <div className="text-white text-sm mb-1">{typeof item.issue === 'string' ? item.issue : JSON.stringify(item.issue)}</div>
-                        <div className="text-gray-400 text-xs">{typeof item.suggestion === 'string' ? item.suggestion : JSON.stringify(item.suggestion)}</div>
+                        <div className="text-white text-sm mb-1">{safeRender(item.issue)}</div>
+                        <div className="text-gray-400 text-xs">{safeRender(item.suggestion)}</div>
                       </div>
                     ))}
                   </div>
