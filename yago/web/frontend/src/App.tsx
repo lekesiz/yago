@@ -113,6 +113,7 @@ const App: React.FC = () => {
             { id: 'analytics', label: '📈 Analytics' },
             { id: 'marketplace', label: '🛒 Marketplace' },
             { id: 'enterprise', label: '🏢 Enterprise' },
+            { id: 'errorlogs', label: '🐛 Error Logs' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -140,6 +141,7 @@ const App: React.FC = () => {
             {activeTab === 'analytics' && <AnalyticsTab />}
             {activeTab === 'marketplace' && <MarketplaceTab />}
             {activeTab === 'enterprise' && <EnterpriseDashboard />}
+            {activeTab === 'errorlogs' && <ErrorLogsDashboard />}
           </Suspense>
         </ErrorBoundary>
       </main>
