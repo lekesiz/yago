@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavigationControlsProps {
   onNext: () => void;
@@ -74,35 +74,39 @@ export const NavigationControls: React.FC<NavigationControlsProps> = ({
         )}
 
         {/* Finish Early Button */}
-        {canFinish && (
-          <motion.button
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            onClick={onFinish}
-            disabled={loading}
-            className="flex-1 px-6 py-3 rounded-lg
-                     bg-green-600 hover:bg-green-700 text-white
-                     disabled:opacity-50 disabled:cursor-not-allowed
-                     transition-all duration-200 font-medium shadow-lg"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Finish Early
-            </span>
-          </motion.button>
-        )}
+        <AnimatePresence mode="wait">
+          {canFinish && (
+            <motion.button
+              key="finish-button"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={onFinish}
+              disabled={loading}
+              className="flex-1 px-6 py-3 rounded-lg
+                       bg-green-600 hover:bg-green-700 text-white
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-all duration-200 font-medium shadow-lg"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Finish Early
+              </span>
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         {/* Next Button */}
         <button
