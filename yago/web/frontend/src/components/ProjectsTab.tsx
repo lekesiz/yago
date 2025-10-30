@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { CodePreview } from './CodePreview';
+import { RealtimeProgress } from './RealtimeProgress';
 
 interface Project {
   id: string;
@@ -56,6 +57,7 @@ export const ProjectsTab: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewProject, setPreviewProject] = useState<{ id: string; name: string } | null>(null);
+  const [executingProject, setExecutingProject] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -90,14 +92,18 @@ export const ProjectsTab: React.FC = () => {
     }
   };
 
-  const startProject = async (projectId: string) => {
+  const startProject = async (projectId: string, projectName: string) => {
     try {
-      await axios.post(`http://localhost:8000/api/v1/projects/${projectId}/start`);
-      toast.success('Project started');
-      loadProjects();
+      // Show realtime progress modal
+      setExecutingProject({ id: projectId, name: projectName });
+
+      // Start execution
+      await axios.post(`http://localhost:8000/api/v1/projects/${projectId}/execute`);
+
     } catch (error) {
       console.error('Failed to start project:', error);
       toast.error('Failed to start project');
+      setExecutingProject(null);
     }
   };
 
@@ -356,7 +362,7 @@ export const ProjectsTab: React.FC = () => {
 
                   {project.status === 'creating' && (
                     <button
-                      onClick={() => startProject(project.id)}
+                      onClick={() => startProject(project.id, project.name)}
                       className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition"
                     >
                       ▶️ Start
@@ -601,6 +607,26 @@ export const ProjectsTab: React.FC = () => {
             projectId={previewProject.id}
             projectName={previewProject.name}
             onClose={() => setPreviewProject(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Realtime Progress Modal */}
+      <AnimatePresence>
+        {executingProject && (
+          <RealtimeProgress
+            projectId={executingProject.id}
+            projectName={executingProject.name}
+            onComplete={(success, data) => {
+              if (success) {
+                toast.success('Project completed successfully!');
+              }
+              loadProjects();
+            }}
+            onClose={() => {
+              setExecutingProject(null);
+              loadProjects();
+            }}
           />
         )}
       </AnimatePresence>

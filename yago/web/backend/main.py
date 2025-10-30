@@ -34,6 +34,13 @@ except ImportError:
     from ai_clarification_service import get_ai_clarification_service
     from ai_code_executor import get_code_executor
 
+# Import WebSocket manager
+try:
+    from .services.websocket_manager import manager as ws_manager
+except ImportError:
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'services'))
+    from websocket_manager import manager as ws_manager
+
 app = FastAPI(
     title="YAGO v8.0 API",
     description="Yet Another Genius Orchestrator - Enterprise AI Platform",
@@ -128,6 +135,38 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+# WebSocket endpoints
+@app.websocket("/ws/projects/{project_id}")
+async def websocket_project_updates(websocket: WebSocket, project_id: str):
+    """WebSocket endpoint for real-time project updates"""
+    await ws_manager.connect(websocket, project_id)
+    try:
+        while True:
+            # Keep connection alive and handle client messages
+            data = await websocket.receive_text()
+
+            # Handle client messages (ping/pong, etc)
+            try:
+                message = json.loads(data)
+                if message.get('type') == 'ping':
+                    await ws_manager.send_personal_message({
+                        'type': 'pong',
+                        'timestamp': datetime.now().isoformat()
+                    }, websocket)
+            except json.JSONDecodeError:
+                pass
+
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket, project_id)
+    except Exception as e:
+        print(f"WebSocket error for project {project_id}: {e}")
+        ws_manager.disconnect(websocket, project_id)
+
+@app.get("/api/v1/websocket/stats")
+async def get_websocket_stats():
+    """Get WebSocket connection statistics"""
+    return ws_manager.get_stats()
 
 # Template endpoints
 @app.get("/api/v1/templates/")
@@ -1501,14 +1540,33 @@ async def execute_project_code_generation(project_id: str, db: Session = Depends
         project.updated_at = datetime.utcnow()
         db.commit()
 
+        # Send WebSocket update: Starting
+        await ws_manager.send_progress_update(
+            project_id, 0, "executing", "🚀 Starting code generation..."
+        )
+
         # Get executor
         executor = get_code_executor()
 
+        # Send WebSocket update: Analyzing
+        await ws_manager.send_progress_update(
+            project_id, 10, "executing", "🔍 Analyzing project requirements..."
+        )
+
         # Execute code generation
+        await ws_manager.send_progress_update(
+            project_id, 25, "executing", "🤖 AI is generating code..."
+        )
+
         result = await executor.execute_project(
             project_id,
             brief or {},
             config or {}
+        )
+
+        # Send WebSocket update: Finalizing
+        await ws_manager.send_progress_update(
+            project_id, 90, "executing", "💾 Saving generated files..."
         )
 
         # Update project with results
@@ -1525,6 +1583,19 @@ async def execute_project_code_generation(project_id: str, db: Session = Depends
 
         db.commit()
         db.refresh(project)
+
+        # Send WebSocket completion notification
+        await ws_manager.send_completion(
+            project_id,
+            success=True,
+            files_generated=project.files_generated,
+            lines_of_code=project.lines_of_code,
+            cost=project.actual_cost
+        )
+
+        await ws_manager.send_progress_update(
+            project_id, 100, "completed", "✅ Code generation completed!"
+        )
 
         return {
             "project_id": project_id,
@@ -1551,6 +1622,10 @@ async def execute_project_code_generation(project_id: str, db: Session = Depends
             project.errors = json.dumps(errors_list)
 
             db.commit()
+
+            # Send WebSocket error notification
+            await ws_manager.send_error(project_id, str(e))
+            await ws_manager.send_completion(project_id, success=False)
 
         import traceback
         return {
