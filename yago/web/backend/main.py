@@ -1,7 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.security import OAuth2PasswordRequestForm
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
@@ -227,9 +226,9 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @app.post("/api/v1/auth/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login with email and password"""
-    user = AuthService.authenticate_user(db, form_data.username, form_data.password)
+    user = AuthService.authenticate_user(db, credentials.email, credentials.password)
 
     if not user:
         raise HTTPException(

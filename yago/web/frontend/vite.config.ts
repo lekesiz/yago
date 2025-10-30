@@ -9,13 +9,6 @@ export default defineConfig({
     react({
       // Enable Fast Refresh
       fastRefresh: true,
-      // Babel optimizations
-      babel: {
-        plugins: [
-          // Remove prop-types in production
-          ['babel-plugin-transform-remove-console', { exclude: ['error', 'warn'] }],
-        ],
-      },
     }),
     // Gzip compression
     viteCompression({
