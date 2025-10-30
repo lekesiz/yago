@@ -375,6 +375,205 @@ async def templates_health():
     """Health check for template system"""
     return {"status": "healthy", "templates_count": len(templates_db)}
 
+# User-submitted Templates endpoints
+class TemplateSubmit(BaseModel):
+    name: str
+    description: str
+    category: str
+    difficulty: str = "intermediate"
+    icon: str = "📦"
+    tags: List[str] = []
+    estimated_time: Optional[str] = None
+    estimated_cost: float = 0.0
+    template_data: dict
+
+@app.post("/api/v1/user-templates/submit")
+async def submit_template(
+    template: TemplateSubmit,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Submit a new template to marketplace"""
+    try:
+        new_template = models.Template(
+            user_id=current_user.id,
+            name=template.name,
+            description=template.description,
+            category=template.category,
+            difficulty=template.difficulty,
+            icon=template.icon,
+            tags=json.dumps(template.tags),
+            estimated_time=template.estimated_time,
+            estimated_cost=template.estimated_cost,
+            template_data=json.dumps(template.template_data),
+            status="pending",
+            is_published=False
+        )
+
+        db.add(new_template)
+        db.commit()
+        db.refresh(new_template)
+
+        return {
+            "message": "Template submitted successfully",
+            "template": new_template.to_dict()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to submit template: {str(e)}")
+
+@app.get("/api/v1/user-templates")
+async def get_user_templates(
+    status: Optional[str] = None,
+    category: Optional[str] = None,
+    published_only: bool = True,
+    db: Session = Depends(get_db)
+):
+    """Get all user-submitted templates"""
+    query = db.query(models.Template)
+
+    if published_only:
+        query = query.filter(models.Template.is_published == True)
+
+    if status:
+        query = query.filter(models.Template.status == status)
+
+    if category:
+        query = query.filter(models.Template.category == category)
+
+    templates = query.order_by(models.Template.created_at.desc()).all()
+
+    return {
+        "templates": [t.to_dict() for t in templates],
+        "total": len(templates)
+    }
+
+@app.get("/api/v1/user-templates/my")
+async def get_my_templates(
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user's submitted templates"""
+    templates = db.query(models.Template).filter(
+        models.Template.user_id == current_user.id
+    ).order_by(models.Template.created_at.desc()).all()
+
+    return {
+        "templates": [t.to_dict() for t in templates],
+        "total": len(templates)
+    }
+
+@app.get("/api/v1/user-templates/{template_id}")
+async def get_user_template(template_id: str, db: Session = Depends(get_db)):
+    """Get a specific user template"""
+    template = db.query(models.Template).filter(models.Template.id == template_id).first()
+
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    return template.to_dict()
+
+@app.put("/api/v1/user-templates/{template_id}")
+async def update_template(
+    template_id: str,
+    template_update: TemplateSubmit,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update a user template"""
+    template = db.query(models.Template).filter(
+        models.Template.id == template_id,
+        models.Template.user_id == current_user.id
+    ).first()
+
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found or unauthorized")
+
+    # Update fields
+    template.name = template_update.name
+    template.description = template_update.description
+    template.category = template_update.category
+    template.difficulty = template_update.difficulty
+    template.icon = template_update.icon
+    template.tags = json.dumps(template_update.tags)
+    template.estimated_time = template_update.estimated_time
+    template.estimated_cost = template_update.estimated_cost
+    template.template_data = json.dumps(template_update.template_data)
+    template.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(template)
+
+    return {
+        "message": "Template updated successfully",
+        "template": template.to_dict()
+    }
+
+@app.delete("/api/v1/user-templates/{template_id}")
+async def delete_template(
+    template_id: str,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a user template"""
+    template = db.query(models.Template).filter(
+        models.Template.id == template_id,
+        models.Template.user_id == current_user.id
+    ).first()
+
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found or unauthorized")
+
+    db.delete(template)
+    db.commit()
+
+    return {"message": "Template deleted successfully"}
+
+@app.post("/api/v1/user-templates/{template_id}/approve")
+async def approve_template(
+    template_id: str,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Approve a template (admin only - for now any authenticated user can approve)"""
+    template = db.query(models.Template).filter(models.Template.id == template_id).first()
+
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    template.status = "approved"
+    template.is_published = True
+    template.published_at = datetime.utcnow()
+    db.commit()
+    db.refresh(template)
+
+    return {
+        "message": "Template approved and published",
+        "template": template.to_dict()
+    }
+
+@app.post("/api/v1/user-templates/{template_id}/reject")
+async def reject_template(
+    template_id: str,
+    reason: Optional[str] = None,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Reject a template (admin only)"""
+    template = db.query(models.Template).filter(models.Template.id == template_id).first()
+
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    template.status = "rejected"
+    template.is_published = False
+    db.commit()
+    db.refresh(template)
+
+    return {
+        "message": f"Template rejected{': ' + reason if reason else ''}",
+        "template": template.to_dict()
+    }
+
 # Clarification endpoints - MIGRATED TO DATABASE
 # sessions_db: Dict[str, Dict] = {}  # Old in-memory storage
 
