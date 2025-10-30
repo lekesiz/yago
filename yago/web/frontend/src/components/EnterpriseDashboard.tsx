@@ -276,7 +276,7 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-white font-medium mb-2 text-sm">Language Breakdown</h4>
                   <div className="space-y-2">
-                    {Object.entries(gitResult.language_breakdown).map(([lang, percent]) => (
+                    {gitResult.language_breakdown && Object.entries(gitResult.language_breakdown).map(([lang, percent]) => (
                       <div key={lang}>
                         <div className="flex justify-between text-xs text-gray-400 mb-1">
                           <span>{lang}</span>
@@ -294,15 +294,15 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="text-center p-2 bg-white/5 rounded">
                     <div className="text-gray-400">Commits</div>
-                    <div className="text-white font-bold">{gitResult.git_stats.total_commits}</div>
+                    <div className="text-white font-bold">{gitResult.git_stats?.total_commits || 0}</div>
                   </div>
                   <div className="text-center p-2 bg-white/5 rounded">
                     <div className="text-gray-400">Contributors</div>
-                    <div className="text-white font-bold">{gitResult.git_stats.contributors}</div>
+                    <div className="text-white font-bold">{gitResult.git_stats?.contributors || 0}</div>
                   </div>
                   <div className="text-center p-2 bg-white/5 rounded">
                     <div className="text-gray-400">Last Commit</div>
-                    <div className="text-white font-bold text-[10px]">{gitResult.git_stats.last_commit}</div>
+                    <div className="text-white font-bold text-[10px]">{gitResult.git_stats?.last_commit || 'N/A'}</div>
                   </div>
                 </div>
 
@@ -310,7 +310,7 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-white font-medium mb-2 text-sm">Recommendations</h4>
                   <ul className="space-y-1">
-                    {gitResult.recommendations.map((rec, idx) => (
+                    {gitResult.recommendations?.map((rec, idx) => (
                       <li key={idx} className="text-gray-400 text-xs flex items-start">
                         <span className="text-green-400 mr-2">•</span>
                         <span>{rec}</span>
@@ -397,7 +397,7 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-white font-medium mb-2 text-sm">Refactoring Plan</h4>
                   <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-                    {refactorResult.refactoring_plan.map((item, idx) => (
+                    {refactorResult.refactoring_plan?.map((item, idx) => (
                       <div key={idx} className="bg-white/5 rounded p-3 border-l-4 border-purple-500">
                         <div className="flex items-center justify-between mb-1">
                           <span className={`text-xs font-bold px-2 py-0.5 rounded ${
@@ -483,28 +483,28 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-500/30">
                     <div className="text-blue-400 text-xs mb-1">Total Features</div>
-                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report.total_features}</div>
+                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report?.total_features}</div>
                   </div>
                   <div className="bg-green-900/20 rounded-lg p-3 border border-green-500/30">
                     <div className="text-green-400 text-xs mb-1">Documented</div>
-                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report.documented}</div>
+                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report?.documented}</div>
                   </div>
                   <div className="bg-purple-900/20 rounded-lg p-3 border border-purple-500/30">
                     <div className="text-purple-400 text-xs mb-1">Implemented</div>
-                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report.implemented}</div>
+                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report?.implemented}</div>
                   </div>
                   <div className="bg-red-900/20 rounded-lg p-3 border border-red-500/30">
                     <div className="text-red-400 text-xs mb-1">Missing</div>
-                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report.missing}</div>
+                    <div className="text-2xl font-bold text-white">{complianceResult.compliance_report?.missing}</div>
                   </div>
                 </div>
 
                 {/* Missing Implementations */}
-                {complianceResult.missing_implementations.length > 0 && (
+                {complianceResult.missing_implementations?.length > 0 && (
                   <div>
                     <h4 className="text-white font-medium mb-2 text-sm">Missing Implementations</h4>
                     <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar">
-                      {complianceResult.missing_implementations.map((item, idx) => (
+                      {complianceResult.missing_implementations?.map((item, idx) => (
                         <div key={idx} className="text-red-400 text-xs flex items-start bg-red-900/10 p-2 rounded">
                           <span className="mr-2">⚠</span>
                           <span>{item}</span>
@@ -515,11 +515,11 @@ export const EnterpriseDashboard: React.FC = () => {
                 )}
 
                 {/* Undocumented Features */}
-                {complianceResult.undocumented_features.length > 0 && (
+                {complianceResult.undocumented_features?.length > 0 && (
                   <div>
                     <h4 className="text-white font-medium mb-2 text-sm">Undocumented Features</h4>
                     <div className="space-y-1 max-h-32 overflow-y-auto custom-scrollbar">
-                      {complianceResult.undocumented_features.map((item, idx) => (
+                      {complianceResult.undocumented_features?.map((item, idx) => (
                         <div key={idx} className="text-yellow-400 text-xs flex items-start bg-yellow-900/10 p-2 rounded">
                           <span className="mr-2">📝</span>
                           <span>{item}</span>
@@ -582,7 +582,7 @@ export const EnterpriseDashboard: React.FC = () => {
                     <div className="text-gray-400 text-xs mt-1">Files Generated</div>
                   </div>
                   <div className="bg-blue-900/20 rounded-lg p-3 border border-blue-500/30 text-center">
-                    <div className="text-3xl font-bold text-blue-400">{docsResult.documentation_types.length}</div>
+                    <div className="text-3xl font-bold text-blue-400">{docsResult.documentation_types?.length}</div>
                     <div className="text-gray-400 text-xs mt-1">Doc Types</div>
                   </div>
                 </div>
@@ -591,7 +591,7 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-white font-medium mb-2 text-sm">Documentation Types</h4>
                   <div className="flex flex-wrap gap-2">
-                    {docsResult.documentation_types.map((type, idx) => (
+                    {docsResult.documentation_types?.map((type, idx) => (
                       <span key={idx} className="px-3 py-1 bg-orange-600/20 text-orange-300 text-xs rounded-full border border-orange-500/30">
                         {type}
                       </span>
@@ -603,7 +603,7 @@ export const EnterpriseDashboard: React.FC = () => {
                 <div>
                   <h4 className="text-white font-medium mb-2 text-sm">Generated Files</h4>
                   <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
-                    {docsResult.generated_files.map((file, idx) => (
+                    {docsResult.generated_files?.map((file, idx) => (
                       <div key={idx} className="bg-white/5 rounded p-3 flex items-center justify-between hover:bg-white/10 transition">
                         <div className="flex-1">
                           <div className="text-white text-sm font-medium">{file.name}</div>
