@@ -415,3 +415,86 @@ class Template(Base):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "published_at": self.published_at.isoformat() if self.published_at else None,
         }
+
+
+class ErrorLog(Base):
+    """Error tracking and logging system"""
+    __tablename__ = "error_logs"
+
+    # Primary key
+    id = Column(String, primary_key=True, default=generate_uuid)
+
+    # Error details
+    error_type = Column(String(100), nullable=False)  # TypeError, Error, etc.
+    error_message = Column(Text, nullable=False)
+    stack_trace = Column(Text)
+
+    # Context
+    source = Column(String(50), nullable=False)  # frontend, backend
+    component = Column(String(255))  # Component or module name
+    file_path = Column(String(500))  # File where error occurred
+    line_number = Column(Integer)  # Line number
+
+    # User context
+    user_id = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    session_id = Column(String(255))  # Browser session ID
+    user_agent = Column(String(500))  # Browser info
+
+    # Environment
+    url = Column(String(1000))  # Page URL where error occurred
+    request_data = Column(JSONB if IS_POSTGRESQL else Text)  # Request payload
+    environment = Column(String(50), default="development")  # dev, staging, production
+
+    # Additional context
+    error_metadata = Column(JSONB if IS_POSTGRESQL else Text)  # Any additional data
+
+    # Status
+    severity = Column(String(20), default="error")  # debug, info, warning, error, critical
+    resolved = Column(Boolean, default=False)
+    resolved_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    resolved_by = Column(String, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text('CURRENT_TIMESTAMP'))
+    updated_at = Column(TIMESTAMP(timezone=True), onupdate=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id], backref="error_logs")
+    resolver = relationship("User", foreign_keys=[resolved_by], backref="resolved_errors")
+
+    # Indexes for fast querying
+    __table_args__ = (
+        Index('idx_error_type', 'error_type'),
+        Index('idx_source', 'source'),
+        Index('idx_severity', 'severity'),
+        Index('idx_resolved', 'resolved'),
+        Index('idx_created_at', 'created_at'),
+        Index('idx_user_id', 'user_id'),
+    )
+
+    def to_dict(self):
+        """Convert to dictionary"""
+        import json
+        return {
+            "id": self.id,
+            "error_type": self.error_type,
+            "error_message": self.error_message,
+            "stack_trace": self.stack_trace,
+            "source": self.source,
+            "component": self.component,
+            "file_path": self.file_path,
+            "line_number": self.line_number,
+            "user_id": self.user_id,
+            "session_id": self.session_id,
+            "user_agent": self.user_agent,
+            "url": self.url,
+            "request_data": json.loads(self.request_data) if isinstance(self.request_data, str) else self.request_data,
+            "environment": self.environment,
+            "metadata": json.loads(self.error_metadata) if isinstance(self.error_metadata, str) else self.error_metadata,
+            "severity": self.severity,
+            "resolved": self.resolved,
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
+            "resolved_by": self.resolved_by,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

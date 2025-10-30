@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from typing import Dict, List, Optional
@@ -2284,3 +2284,172 @@ async def list_enterprise_features():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# ============================================================================
+# ERROR TRACKING ENDPOINTS (v8.3)
+# ============================================================================
+
+# Import error logging service
+try:
+    from .error_logging_service import ErrorLoggingService
+except ImportError:
+    from error_logging_service import ErrorLoggingService
+
+# Pydantic models for error logging
+class ErrorLogCreate(BaseModel):
+    error_type: str
+    error_message: str
+    source: str  # frontend, backend
+    stack_trace: Optional[str] = None
+    component: Optional[str] = None
+    file_path: Optional[str] = None
+    line_number: Optional[int] = None
+    session_id: Optional[str] = None
+    user_agent: Optional[str] = None
+    url: Optional[str] = None
+    request_data: Optional[dict] = None
+    environment: str = "development"
+    metadata: Optional[dict] = None
+    severity: str = "error"
+
+@app.post("/api/v1/errors/log")
+async def log_error(
+    error_data: ErrorLogCreate,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = None
+):
+    """
+    Log an error from frontend or backend
+    Public endpoint - no authentication required for error logging
+    """
+    try:
+        # Get user_id if user is authenticated (optional)
+        user_id = current_user.id if current_user else None
+
+        # Log the error
+        error_log = ErrorLoggingService.log_error(
+            db=db,
+            error_type=error_data.error_type,
+            error_message=error_data.error_message,
+            source=error_data.source,
+            stack_trace=error_data.stack_trace,
+            component=error_data.component,
+            file_path=error_data.file_path,
+            line_number=error_data.line_number,
+            user_id=user_id,
+            session_id=error_data.session_id,
+            user_agent=error_data.user_agent or request.headers.get("user-agent"),
+            url=error_data.url,
+            request_data=error_data.request_data,
+            environment=error_data.environment,
+            error_metadata=error_data.metadata,
+            severity=error_data.severity
+        )
+
+        return {
+            "success": True,
+            "error_id": error_log.id,
+            "message": "Error logged successfully"
+        }
+
+    except Exception as e:
+        # Even error logging can fail - return error but don't crash
+        return {
+            "success": False,
+            "message": f"Failed to log error: {str(e)}"
+        }
+
+@app.get("/api/v1/errors")
+async def get_errors(
+    limit: int = 100,
+    offset: int = 0,
+    source: Optional[str] = None,
+    severity: Optional[str] = None,
+    resolved: Optional[bool] = None,
+    error_type: Optional[str] = None,
+    component: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """Get error logs with filters"""
+    try:
+        errors = ErrorLoggingService.get_errors(
+            db=db,
+            limit=limit,
+            offset=offset,
+            source=source,
+            severity=severity,
+            resolved=resolved,
+            error_type=error_type,
+            component=component
+        )
+
+        return {
+            "errors": [error.to_dict() for error in errors],
+            "total": len(errors),
+            "limit": limit,
+            "offset": offset
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch errors: {str(e)}")
+
+@app.get("/api/v1/errors/stats")
+async def get_error_stats(
+    hours: int = 24,
+    db: Session = Depends(get_db)
+):
+    """Get error statistics"""
+    try:
+        stats = ErrorLoggingService.get_error_stats(db=db, hours=hours)
+        return stats
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch stats: {str(e)}")
+
+@app.put("/api/v1/errors/{error_id}/resolve")
+async def resolve_error(
+    error_id: str,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Mark an error as resolved"""
+    try:
+        error_log = ErrorLoggingService.resolve_error(
+            db=db,
+            error_id=error_id,
+            resolved_by=current_user.id
+        )
+
+        if not error_log:
+            raise HTTPException(status_code=404, detail="Error not found")
+
+        return {
+            "success": True,
+            "error": error_log.to_dict()
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to resolve error: {str(e)}")
+
+@app.delete("/api/v1/errors/cleanup")
+async def cleanup_old_errors(
+    days: int = 30,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Delete resolved errors older than specified days (Admin only)"""
+    try:
+        deleted_count = ErrorLoggingService.delete_old_errors(db=db, days=days)
+
+        return {
+            "success": True,
+            "deleted_count": deleted_count,
+            "days": days
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to cleanup errors: {str(e)}")
+
