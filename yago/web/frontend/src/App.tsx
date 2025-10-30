@@ -13,6 +13,7 @@ import { AnalyticsTab } from './components/AnalyticsTab';
 import { MarketplaceTab } from './components/MarketplaceTab';
 import { ProjectsTab } from './components/ProjectsTab';
 import { EnterpriseDashboard } from './components/EnterpriseDashboard';
+import { ErrorLogsDashboard } from './components/ErrorLogsDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { setupGlobalErrorHandlers } from './services/errorLogger';
@@ -23,7 +24,7 @@ const App: React.FC = () => {
   const { user, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [backendStatus, setBackendStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
-  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace' | 'enterprise'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace' | 'enterprise' | 'errorlogs'>('overview');
 
   useEffect(() => {
     // Initialize global error handlers
