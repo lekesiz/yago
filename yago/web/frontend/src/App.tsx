@@ -15,6 +15,7 @@ import { ProjectsTab } from './components/ProjectsTab';
 import { EnterpriseDashboard } from './components/EnterpriseDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
+import { setupGlobalErrorHandlers } from './services/errorLogger';
 import './i18n/config';
 import './index.css';
 
@@ -25,6 +26,9 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'create' | 'projects' | 'models' | 'analytics' | 'marketplace' | 'enterprise'>('overview');
 
   useEffect(() => {
+    // Initialize global error handlers
+    setupGlobalErrorHandlers();
+
     // Check backend health
     fetch('http://localhost:8000/health')
       .then(res => res.json())
