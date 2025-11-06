@@ -95,14 +95,18 @@ class Project(Base):
         if isinstance(errors, str):
             try:
                 errors = json.loads(errors)
-            except:
+            except (json.JSONDecodeError, ValueError) as e:
+                import logging
+                logging.warning(f"Failed to parse errors JSON for project {self.id}: {e}")
                 errors = []
 
         logs = self.logs
         if isinstance(logs, str):
             try:
                 logs = json.loads(logs)
-            except:
+            except (json.JSONDecodeError, ValueError) as e:
+                import logging
+                logging.warning(f"Failed to parse logs JSON for project {self.id}: {e}")
                 logs = []
 
         return {
