@@ -22,8 +22,20 @@ except ImportError:
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# JWT settings
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "yago-super-secret-key-change-in-production-2024")
+# JWT settings - Secure configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    # Check if we're in development mode
+    if os.getenv("ENV", "development") == "production":
+        raise ValueError(
+            "CRITICAL SECURITY ERROR: JWT_SECRET_KEY must be set in production environment! "
+            "Generate a secure key with: openssl rand -hex 32"
+        )
+    else:
+        # Development fallback with warning
+        SECRET_KEY = "dev-secret-key-DO-NOT-USE-IN-PRODUCTION"
+        print("⚠️  WARNING: Using development JWT secret key. Set JWT_SECRET_KEY in production!")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 

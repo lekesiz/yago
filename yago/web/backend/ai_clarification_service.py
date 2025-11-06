@@ -16,15 +16,37 @@ class AIClarificationService:
     """AI service for dynamic question generation and answer analysis"""
 
     def __init__(self):
-        # Initialize all AI providers
-        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        # Initialize all AI providers with validation
+        openai_key = os.getenv("OPENAI_API_KEY")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+        google_key = os.getenv("GOOGLE_API_KEY")
+        cursor_key = os.getenv("CURSOR_API_KEY")
 
-        # Configure Google Gemini
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        # Initialize OpenAI if key is available
+        self.openai_client = None
+        if openai_key:
+            try:
+                self.openai_client = OpenAI(api_key=openai_key)
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to initialize OpenAI client: {e}")
+
+        # Initialize Anthropic if key is available
+        self.anthropic_client = None
+        if anthropic_key:
+            try:
+                self.anthropic_client = anthropic.Anthropic(api_key=anthropic_key)
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to initialize Anthropic client: {e}")
+
+        # Configure Google Gemini if key is available
+        if google_key:
+            try:
+                genai.configure(api_key=google_key)
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to configure Google Gemini: {e}")
 
         # Cursor API configuration
-        self.cursor_api_key = os.getenv("CURSOR_API_KEY")
+        self.cursor_api_key = cursor_key
         self.cursor_api_url = "https://api.cursor.sh/v1/chat/completions"
 
         # Model configurations
@@ -62,6 +84,8 @@ class AIClarificationService:
         """Universal AI provider caller with fallback support"""
         try:
             if provider == "openai":
+                if not self.openai_client:
+                    raise ValueError("OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.")
                 response = self.openai_client.chat.completions.create(
                     model=self.models["openai"][task_type],
                     messages=[
@@ -74,6 +98,8 @@ class AIClarificationService:
                 return response.choices[0].message.content.strip()
 
             elif provider == "anthropic":
+                if not self.anthropic_client:
+                    raise ValueError("Anthropic API key not configured. Please set ANTHROPIC_API_KEY environment variable.")
                 response = self.anthropic_client.messages.create(
                     model=self.models["anthropic"][task_type],
                     max_tokens=3000 if task_type == "quick" else 4000,
@@ -88,6 +114,8 @@ class AIClarificationService:
                 return response.text
 
             elif provider == "cursor":
+                if not self.cursor_api_key:
+                    raise ValueError("Cursor API key not configured. Please set CURSOR_API_KEY environment variable.")
                 response = requests.post(
                     self.cursor_api_url,
                     headers={
