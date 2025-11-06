@@ -5,6 +5,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/env';
+import { logger } from '../services/logger';
 
 interface User {
   id: string;
@@ -72,13 +74,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(userData);
     setToken(authToken);
     localStorage.setItem('yago_token', authToken);
+    logger.info('User logged in', { userId: userData.id });
   };
 
   const logout = () => {
+    const userId = user?.id;
     setUser(null);
     setToken(null);
     localStorage.removeItem('yago_token');
     toast.success('Logged out successfully');
+    logger.info('User logged out', { userId });
   };
 
   const refreshUser = async () => {
