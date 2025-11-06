@@ -50,9 +50,104 @@ except ImportError:
     from auth_service import AuthService, get_current_user, get_current_active_user
 
 app = FastAPI(
-    title="YAGO v8.0 API",
-    description="Yet Another Genius Orchestrator - Enterprise AI Platform",
-    version="8.0.0"
+    title="YAGO v8.4 API",
+    description="""
+## Yet Another Genius Orchestrator - Enterprise AI Platform
+
+YAGO is a powerful multi-AI code generation platform that transforms ideas into production-ready code.
+
+### Key Features
+
+* 🤖 **Multi-AI Integration** - OpenAI, Anthropic, Google, Cursor
+* 🎯 **Smart Model Selection** - Automatic model selection based on task requirements
+* 📊 **Real-time Analytics** - Track costs, performance, and usage
+* 🔒 **Enterprise Security** - JWT authentication, rate limiting, input validation
+* 🚀 **Production Ready** - Comprehensive error handling and logging
+* 📝 **Template Marketplace** - Pre-built templates for common projects
+* 🔄 **WebSocket Support** - Real-time project updates
+* 📈 **Performance Optimized** - Pagination, caching, N+1 query prevention
+
+### Authentication
+
+Most endpoints require JWT authentication. To authenticate:
+
+1. Register a new user via `/api/v1/auth/register`
+2. Login via `/api/v1/auth/login` to get an access token
+3. Include the token in requests: `Authorization: Bearer <token>`
+
+### Rate Limiting
+
+API endpoints are rate-limited to ensure fair usage:
+
+- Authentication endpoints: 10 requests/minute
+- Project execution: 5 requests/minute
+- General endpoints: 100 requests/minute
+
+### Pagination
+
+List endpoints support pagination with the following query parameters:
+
+- `page`: Page number (default: 1)
+- `page_size`: Items per page (default: 20, max: 100)
+- `sort_by`: Field to sort by (default varies by endpoint)
+- `order`: Sort order - `asc` or `desc` (default: `desc`)
+
+### Support
+
+For issues or questions, visit: https://github.com/lekesiz/yago
+    """,
+    version="8.4.0",
+    contact={
+        "name": "YAGO Support",
+        "url": "https://github.com/lekesiz/yago",
+        "email": "support@yago.dev"
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT"
+    },
+    openapi_tags=[
+        {
+            "name": "Health",
+            "description": "Health check and system status endpoints"
+        },
+        {
+            "name": "Authentication",
+            "description": "User registration, login, and token management"
+        },
+        {
+            "name": "Projects",
+            "description": "Project creation, management, and code generation"
+        },
+        {
+            "name": "Templates",
+            "description": "Project templates and marketplace"
+        },
+        {
+            "name": "User Templates",
+            "description": "User-submitted template management"
+        },
+        {
+            "name": "AI Models",
+            "description": "AI model listing, selection, and comparison"
+        },
+        {
+            "name": "Analytics",
+            "description": "Usage analytics, metrics, and statistics"
+        },
+        {
+            "name": "Errors",
+            "description": "Error logging and tracking"
+        },
+        {
+            "name": "WebSocket",
+            "description": "Real-time updates via WebSocket"
+        },
+        {
+            "name": "Enterprise",
+            "description": "Enterprise features - Git analysis, refactoring, documentation"
+        }
+    ]
 )
 
 # CORS middleware
@@ -136,12 +231,14 @@ categories_db = [
 ]
 
 # Root endpoints
-@app.get("/")
+@app.get("/", tags=["Health"])
 async def root():
-    return {"message": "YAGO v8.0 API", "status": "running", "version": "8.0.0"}
+    """API root endpoint - returns basic API information"""
+    return {"message": "YAGO v8.4 API", "status": "running", "version": "8.4.0"}
 
-@app.get("/health")
+@app.get("/health", tags=["Health"])
 async def health():
+    """Health check endpoint - returns API health status"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 # WebSocket endpoints
@@ -200,9 +297,14 @@ class UserResponse(BaseModel):
     last_login: Optional[str]
 
 # Authentication endpoints
-@app.post("/api/v1/auth/register", response_model=dict)
+@app.post("/api/v1/auth/register", response_model=dict, tags=["Authentication"])
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    """Register a new user"""
+    """
+    Register a new user account
+
+    Creates a new user account and returns an access token for immediate use.
+    Password must be at least 8 characters with uppercase and digits.
+    """
     try:
         user = AuthService.create_user(
             db=db,
@@ -225,9 +327,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
-@app.post("/api/v1/auth/login", response_model=Token)
+@app.post("/api/v1/auth/login", response_model=Token, tags=["Authentication"])
 async def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    """Login with email and password"""
+    """
+    Login with email and password
+
+    Authenticate user and receive a JWT access token valid for 7 days.
+    """
     user = AuthService.authenticate_user(db, credentials.email, credentials.password)
 
     if not user:
@@ -425,9 +531,29 @@ async def get_user_templates(
     status: Optional[str] = None,
     category: Optional[str] = None,
     published_only: bool = True,
+    page: int = 1,
+    page_size: int = 20,
+    sort_by: Optional[str] = "created_at",
+    order: str = "desc",
     db: Session = Depends(get_db)
 ):
-    """Get all user-submitted templates"""
+    """
+    Get all user-submitted templates with pagination
+
+    Query Parameters:
+    - status: Filter by status (pending, approved, rejected)
+    - category: Filter by category
+    - published_only: Show only published templates (default: true)
+    - page: Page number (default: 1)
+    - page_size: Items per page (default: 20, max: 100)
+    - sort_by: Field to sort by (default: created_at)
+    - order: Sort order - asc or desc (default: desc)
+    """
+    try:
+        from utils.query_utils import QueryUtils
+    except ImportError:
+        from .utils.query_utils import QueryUtils
+
     query = db.query(models.Template)
 
     if published_only:
@@ -439,26 +565,67 @@ async def get_user_templates(
     if category:
         query = query.filter(models.Template.category == category)
 
-    templates = query.order_by(models.Template.created_at.desc()).all()
+    # Apply sorting
+    query = QueryUtils.apply_sorting(query, models.Template, sort_by, order)
+
+    # Apply pagination
+    paginated_query, pagination_meta = QueryUtils.paginate(
+        query=query,
+        page=page,
+        page_size=page_size,
+        max_page_size=100
+    )
+
+    templates = paginated_query.all()
 
     return {
         "templates": [t.to_dict() for t in templates],
-        "total": len(templates)
+        "pagination": pagination_meta
     }
 
 @app.get("/api/v1/user-templates/my")
 async def get_my_templates(
+    page: int = 1,
+    page_size: int = 20,
+    sort_by: Optional[str] = "created_at",
+    order: str = "desc",
     current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """Get current user's submitted templates"""
-    templates = db.query(models.Template).filter(
+    """
+    Get current user's submitted templates with pagination
+
+    Query Parameters:
+    - page: Page number (default: 1)
+    - page_size: Items per page (default: 20, max: 100)
+    - sort_by: Field to sort by (default: created_at)
+    - order: Sort order - asc or desc (default: desc)
+    """
+    try:
+        from utils.query_utils import QueryUtils
+    except ImportError:
+        from .utils.query_utils import QueryUtils
+
+    query = db.query(models.Template).filter(
         models.Template.user_id == current_user.id
-    ).order_by(models.Template.created_at.desc()).all()
+    )
+
+    # Apply sorting
+    query = QueryUtils.apply_sorting(query, models.Template, sort_by, order)
+
+    # Apply pagination
+    paginated_query, pagination_meta = QueryUtils.paginate(
+        query=query,
+        page=page,
+        page_size=page_size,
+        max_page_size=100
+    )
+
+    templates = paginated_query.all()
 
     return {
         "templates": [t.to_dict() for t in templates],
-        "total": len(templates)
+        "pagination": pagination_meta
     }
 
 @app.get("/api/v1/user-templates/{template_id}")
@@ -1503,13 +1670,35 @@ async def install_marketplace_item(item_id: str):
 # Projects database - MIGRATED TO DATABASE
 # projects_db: Dict[str, Dict] = {}  # Old in-memory storage
 
-@app.get("/api/v1/projects")
+@app.get("/api/v1/projects", tags=["Projects"])
 async def list_projects(
     status: Optional[str] = None,
-    limit: int = 100,
+    page: int = 1,
+    page_size: int = 20,
+    sort_by: Optional[str] = "created_at",
+    order: str = "desc",
     db: Session = Depends(get_db)
 ):
-    """List all projects from database"""
+    """
+    List all projects with pagination and filtering
+
+    Retrieve a paginated list of projects with optional status filtering and sorting.
+
+    **Query Parameters:**
+    - **status**: Filter by project status (`creating`, `in_progress`, `completed`, `failed`, `paused`)
+    - **page**: Page number (default: 1)
+    - **page_size**: Items per page (default: 20, max: 100)
+    - **sort_by**: Field to sort by (default: `created_at`)
+    - **order**: Sort order - `asc` or `desc` (default: `desc`)
+
+    **Returns:** Paginated list of projects with metadata
+    """
+    try:
+        # Import pagination utilities
+        from utils.query_utils import QueryUtils
+    except ImportError:
+        from .utils.query_utils import QueryUtils
+
     # Query projects from database
     query = db.query(models.Project)
 
@@ -1517,22 +1706,26 @@ async def list_projects(
     if status:
         query = query.filter(models.Project.status == status)
 
-    # Sort by created_at descending (newest first)
-    query = query.order_by(models.Project.created_at.desc())
+    # Apply sorting
+    query = QueryUtils.apply_sorting(query, models.Project, sort_by, order)
 
-    # Get total count before limit
-    total = query.count()
+    # Apply pagination
+    paginated_query, pagination_meta = QueryUtils.paginate(
+        query=query,
+        page=page,
+        page_size=page_size,
+        max_page_size=100
+    )
 
-    # Apply limit
-    projects = query.limit(limit).all()
+    # Execute query
+    projects = paginated_query.all()
 
     # Convert to dict
     projects_list = [project.to_dict() for project in projects]
 
     return {
         "projects": projects_list,
-        "total": total,
-        "filtered": total
+        "pagination": pagination_meta
     }
 
 @app.get("/api/v1/projects/{project_id}")
@@ -1545,9 +1738,17 @@ async def get_project(project_id: str, db: Session = Depends(get_db)):
 
     return project.to_dict()
 
-@app.post("/api/v1/projects")
+@app.post("/api/v1/projects", tags=["Projects"], status_code=201)
 async def create_project(request: Dict, db: Session = Depends(get_db)):
-    """Create a new project in database"""
+    """
+    Create a new project
+
+    Creates a new project in the database with the provided configuration.
+    The project will be in `creating` status initially.
+
+    **Request Body:** Project brief and configuration
+    **Returns:** Created project details
+    """
     project_id = str(uuid.uuid4())
 
     # Extract project configuration
@@ -1843,19 +2044,23 @@ async def export_project(project_id: str, db: Session = Depends(get_db)):
 # AI CODE EXECUTION ENDPOINTS
 # ============================================================================
 
-@app.post("/api/v1/projects/{project_id}/execute")
+@app.post("/api/v1/projects/{project_id}/execute", tags=["Projects"])
 async def execute_project_code_generation(project_id: str, db: Session = Depends(get_db)):
     """
-    🚀 Execute AI agent to generate actual code for the project
+    🚀 Execute AI code generation for a project
 
-    This is the main feature of YAGO - transforms user requirements into working code!
+    **This is the main feature of YAGO** - transforms user requirements into working code!
 
-    Process:
-    1. Analyze project brief
-    2. Design architecture
-    3. Generate code files
-    4. Generate tests
-    5. Save to filesystem
+    **Process:**
+    1. Analyze project brief and requirements
+    2. Design system architecture
+    3. Generate code files with AI
+    4. Generate tests and documentation
+    5. Save to filesystem and update project status
+
+    **WebSocket Updates:** Real-time progress updates sent via WebSocket
+
+    **Returns:** Execution result with generated files count and cost
     """
     try:
         project = db.query(models.Project).filter(models.Project.id == project_id).first()
@@ -2367,33 +2572,68 @@ async def log_error(
 
 @app.get("/api/v1/errors")
 async def get_errors(
-    limit: int = 100,
-    offset: int = 0,
+    page: int = 1,
+    page_size: int = 50,
     source: Optional[str] = None,
     severity: Optional[str] = None,
     resolved: Optional[bool] = None,
     error_type: Optional[str] = None,
     component: Optional[str] = None,
+    sort_by: Optional[str] = "created_at",
+    order: str = "desc",
     db: Session = Depends(get_db)
 ):
-    """Get error logs with filters"""
+    """
+    Get error logs with filters and pagination
+
+    Query Parameters:
+    - page: Page number (default: 1)
+    - page_size: Items per page (default: 50, max: 100)
+    - source: Filter by source (frontend, backend)
+    - severity: Filter by severity (error, warning, critical)
+    - resolved: Filter by resolved status (true/false)
+    - error_type: Filter by error type
+    - component: Filter by component name
+    - sort_by: Field to sort by (default: created_at)
+    - order: Sort order - asc or desc (default: desc)
+    """
     try:
-        errors = ErrorLoggingService.get_errors(
-            db=db,
-            limit=limit,
-            offset=offset,
-            source=source,
-            severity=severity,
-            resolved=resolved,
-            error_type=error_type,
-            component=component
+        from utils.query_utils import QueryUtils
+    except ImportError:
+        from .utils.query_utils import QueryUtils
+
+    try:
+        # Build query
+        query = db.query(models.ErrorLog)
+
+        # Apply filters
+        if source:
+            query = query.filter(models.ErrorLog.source == source)
+        if severity:
+            query = query.filter(models.ErrorLog.severity == severity)
+        if resolved is not None:
+            query = query.filter(models.ErrorLog.resolved == resolved)
+        if error_type:
+            query = query.filter(models.ErrorLog.error_type == error_type)
+        if component:
+            query = query.filter(models.ErrorLog.component == component)
+
+        # Apply sorting
+        query = QueryUtils.apply_sorting(query, models.ErrorLog, sort_by, order)
+
+        # Apply pagination
+        paginated_query, pagination_meta = QueryUtils.paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            max_page_size=100
         )
+
+        errors = paginated_query.all()
 
         return {
             "errors": [error.to_dict() for error in errors],
-            "total": len(errors),
-            "limit": limit,
-            "offset": offset
+            "pagination": pagination_meta
         }
 
     except Exception as e:

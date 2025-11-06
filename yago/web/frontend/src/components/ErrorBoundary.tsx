@@ -6,6 +6,7 @@
 
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { logError } from '../services/errorLogger';
+import { logger } from '../services/logger';
 
 interface Props {
   children: ReactNode;
@@ -33,7 +34,10 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Use logger service instead of console.error
+    logger.error('ErrorBoundary caught an error', error, {
+      componentStack: errorInfo.componentStack,
+    });
     this.setState({ errorInfo });
 
     // Log error to backend
