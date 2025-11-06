@@ -17,6 +17,8 @@ import { ErrorLogsDashboard } from './components/ErrorLogsDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { setupGlobalErrorHandlers } from './services/errorLogger';
+import { API_BASE_URL } from './config/env';
+import { logger } from './services/logger';
 import './i18n/config';
 import './index.css';
 
@@ -31,10 +33,17 @@ const App: React.FC = () => {
     setupGlobalErrorHandlers();
 
     // Check backend health
-    fetch('http://localhost:8000/health')
+    logger.info('Checking backend health', { apiUrl: API_BASE_URL });
+    fetch(`${API_BASE_URL}/health`)
       .then(res => res.json())
-      .then(() => setBackendStatus('healthy'))
-      .catch(() => setBackendStatus('error'));
+      .then(() => {
+        setBackendStatus('healthy');
+        logger.info('Backend is healthy');
+      })
+      .catch((error) => {
+        setBackendStatus('error');
+        logger.error('Backend health check failed', error);
+      });
   }, []);
 
   return (
